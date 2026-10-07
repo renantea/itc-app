@@ -50,6 +50,67 @@ enabled unit (already on for this account).
 .venv/bin/python -m pytest tests
 ```
 
+## Accessibility and mobile gate
+
+```bash
+# needs the service up, and Playwright in whatever interpreter runs it
+ITC_AUDIT_EMAIL=you@example.com ITC_AUDIT_PASSWORD=... \
+  python tools/audit_a11y.py            # 360px, exits non-zero on findings
+python tools/audit_a11y.py --width 320  # as small as real phones get
+```
+
+Twelve pages, checked rather than eyeballed: viewport overflow, 40px tap
+targets, accessible names, heading order, landmarks, AA contrast against the
+*composited* background, and a keyboard pass (first tab stop is the skip link,
+it reaches `#main`, every stop keeps a focus ring). Currently **0 findings at
+320px and 360px**.
+
+The first run found 65. Almost all of it was six root causes repeated across
+pages — see the comments in `static/css/app.css` next to `--tide-dk`,
+`--sun-cta` and `--muted`, which record the measured ratios rather than the
+intention.
+
+## Backups
+
+```bash
+.venv/bin/python tools/backup.py        # → backups/itc-YYYYmmdd-HHMMSS.db.gz
+ITC_BACKUP_DIR=/srv/backups ITC_BACKUP_KEEP=30 .venv/bin/python tools/backup.py
+```
+
+Uses SQLite's online-backup API, **not** a file copy: the app runs in WAL mode,
+so copying the file mid-write gives a torn database plus a `-wal` you did not
+copy. Each backup is opened and `PRAGMA integrity_check`ed before it is kept,
+and rejected if a table is missing — a backup nobody opened is a guess. Keeps
+14 by default, 0600 in a 0700 directory, because entry data is personal.
+
+To restore: `gunzip -c backups/itc-….db.gz > itc.db` with the service stopped.
+
+A nightly timer ships but is **not installed** — adding a scheduler to your
+machine is your call:
+
+```bash
+cp itc-backup.{service,timer} ~/.config/systemd/user/
+systemctl --user daemon-reload
+systemctl --user enable --now itc-backup.timer
+systemctl --user list-timers itc-backup.timer
+```
+
+## Deploying a change
+
+```bash
+git pull
+systemctl --user restart itc-app
+journalctl --user -u itc-app -n 30
+curl -s localhost:9797/healthz
+```
+
+The schema upgrades itself on boot (`init_db` runs `CREATE TABLE IF NOT EXISTS`
+plus the additive `_migrate`), so there is no migration step. Take a backup
+first anyway if the release touches `db.py`.
+
+Before a release that matters: `pytest`, then the audit above against the
+running service.
+
 ## Shape of the data
 
 The split that matters is **registrations vs entries**. One parent entering
@@ -137,7 +198,17 @@ There is deliberately no way to mint an organiser through the web.
 
 ## Status
 
-Phases 1–6 of 8 complete — foundation, public event browsing, accounts,
-registration flow, confirmation and withdrawal, organiser admin. Next: the
-mobile/accessibility pass and deploy notes (Phase 7); payments are Phase 8.
-See PLAN.md.
+Phases 1–7 of 8 complete — foundation, public event browsing, accounts,
+registration flow, confirmation and withdrawal, organiser admin, and the
+mobile/accessibility/ops pass. 130 tests; 0 audit findings at 320px and 360px.
+
+**Ready for a real entry list, with two things still owed by ITC:**
+
+1. **The real race calendar.** Everything `seed_events.py` writes is sample
+   data and says so in each event summary.
+2. **The waiver wording** in `templates/_waiver.html`, and a decision on the
+   `age_rule` setting — `dec31` (World Triathlon) is the shipped default and
+   has not been confirmed.
+
+Phase 8 is payments; `races.price_bhd` has been in the schema since Phase 1 and
+is 0 everywhere, so it is a feature rather than a migration. See PLAN.md.

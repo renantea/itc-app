@@ -34,7 +34,9 @@
 
   {% if not upcoming and not past %}
     <div class="card empty">
-      <h3>Nothing entered yet</h3>
+      {# h2, not h3: this sits directly under the page h1 and a screen reader
+         announces a skipped level as a missing section. #}
+      <h2>Nothing entered yet</h2>
       <p>Once you enter a race it shows up here, with your reference and the
         option to withdraw.</p>
       <a class="btn btn-enter" href="{{ url_for('pages.home') }}">See what's on</a>

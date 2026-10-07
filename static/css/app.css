@@ -10,15 +10,21 @@
   --deep:    #0a1826;   /* deep water navy — base */
   --hull:    #10273c;   /* raised surface on deep */
   --hull-2:  #16344e;
-  --tide:    #14e0c4;   /* tidal teal — cool energy */
-  --tide-dk: #0b8f7f;   /* teal that passes contrast on white */
-  --sun:     #ff5b41;   /* sunrise coral — effort, the one CTA */
-  --sun-dk:  #e04227;
+  --tide:    #14e0c4;   /* tidal teal — cool energy, never under text */
+  /* Measured, not guessed: #0b8f7f came to 4.00:1 on white and 3.79:1 on
+     --paper, so link text failed AA on the page it is mostly used on. */
+  --tide-dk: #07756a;   /* 5.7:1 on white, 5.4:1 on paper */
+  --sun:     #ff5b41;   /* sunrise coral — accents only, no text on it */
+  /* White on #ff5b41 is 3.08:1. Buttons carry 15px bold text, which is not
+     "large" by WCAG, so they need 4.5 — hence a deeper coral for anything
+     with words on it. The bright one stays for dots, rails and borders. */
+  --sun-cta: #d13d22;   /* 4.8:1 with white */
+  --sun-dk:  #b5321c;   /* 6.3:1 with white — the hover */
   --paper:   #f7f9fb;
   --surface: #ffffff;
   --ink:     #0a1826;
   --ink-2:   #33475b;
-  --muted:   #64788c;
+  --muted:   #5a6b7d;   /* 5.2:1 on --paper; #64788c was 4.32:1 */
   --line:    #dfe6ed;
   --line-2:  #c5d1dc;
   --ok:      #0b8f7f;
@@ -90,7 +96,7 @@ a.sr-only:focus {
   position: fixed; top: .5rem; left: .5rem; z-index: 100;
   width: auto; height: auto; margin: 0; clip: auto;
   padding: .7rem 1.1rem; border-radius: var(--r-sm);
-  background: var(--sun); color: #fff; font-weight: 700; text-decoration: none;
+  background: var(--sun-cta); color: #fff; font-weight: 700; text-decoration: none;
 }
 .muted { color: var(--muted); }
 .small { font-size: var(--t-sm); }
@@ -166,7 +172,7 @@ a.sr-only:focus {
 .btn:hover { background: #eef3f7; color: var(--ink); }
 .btn:active { transform: translateY(1px); }
 /* Coral is the entry action and nothing else. */
-.btn-enter { background: var(--sun); border-color: var(--sun); color: #fff; box-shadow: var(--shadow-sm); }
+.btn-enter { background: var(--sun-cta); border-color: var(--sun-cta); color: #fff; box-shadow: var(--shadow-sm); }
 .btn-enter:hover { background: var(--sun-dk); border-color: var(--sun-dk); color: #fff; }
 .btn-deep { background: var(--deep); border-color: var(--deep); color: #fff; }
 .btn-deep:hover { background: var(--hull-2); border-color: var(--hull-2); color: #fff; }
@@ -220,10 +226,13 @@ main { flex: 1; padding-block: clamp(1.75rem, 5vw, 3rem); }
   padding: clamp(2rem, 6vw, 3.5rem) 1.25rem;
   color: var(--muted);
 }
-.empty h3 { margin-bottom: .4rem; }
+.empty h2, .empty h3 { font-size: var(--t-lg); margin-bottom: .4rem; }
 .empty .btn { margin-top: 1.1rem; }
 
 /* ── Footer ──────────────────────────────────────────── */
+/* .muted is tuned for a white card. On the navy footer it lands at 3.93:1,
+   so the footer states its own. */
+.site-footer .muted { color: #9fb3c4; }
 .site-footer {
   background: var(--deep); color: #90a6b8;
   padding-block: 2rem; margin-top: 3rem;
@@ -243,7 +252,8 @@ main { flex: 1; padding-block: clamp(1.75rem, 5vw, 3rem); }
 
 /* ── Error page ──────────────────────────────────────── */
 .error-page { text-align: center; padding: clamp(3rem, 10vw, 6rem) 1rem; }
-.error-page .code { font-size: 4.5rem; font-weight: 800; color: var(--line-2); line-height: 1; }
+/* Large text still needs 3:1; --line-2 managed 1.47:1. */
+.error-page .code { font-size: 4.5rem; font-weight: 800; color: #76899a; line-height: 1; }
 .error-page h1 { margin: .75rem 0 .5rem; }
 .error-page p { color: var(--muted); margin-bottom: 1.5rem; }
 
@@ -358,7 +368,7 @@ main { flex: 1; padding-block: clamp(1.75rem, 5vw, 3rem); }
 .age-groups { margin-top: .9rem; border-top: 1px solid var(--line); padding-top: .75rem; }
 .age-groups summary {
   cursor: pointer; font-weight: 700; font-size: var(--t-sm); color: var(--ink);
-  min-height: 32px; display: flex; align-items: center;
+  min-height: 44px; display: flex; align-items: center;   /* a thumb, not a line */
 }
 .age-groups ul { list-style: none; display: flex; flex-wrap: wrap; gap: .4rem; margin: .6rem 0; }
 .age-groups li {
@@ -443,7 +453,7 @@ main { flex: 1; padding-block: clamp(1.75rem, 5vw, 3rem); }
 .steps li.is-done { border-top-color: var(--tide-dk); color: var(--tide-dk); }
 .steps li.is-done .steps-n { background: var(--tide-dk); color: #fff; }
 .steps li.is-now { border-top-color: var(--sun); color: var(--ink); }
-.steps li.is-now .steps-n { background: var(--sun); color: #fff; }
+.steps li.is-now .steps-n { background: var(--sun-cta); color: #fff; }
 
 .enter-card { padding: 1.2rem; }
 @media (min-width: 34rem) { .enter-card { padding: 1.6rem; } }
@@ -565,7 +575,10 @@ fieldset.group > .muted { margin: .3rem 0 .8rem; }
 .order-card { padding: 1rem 1.1rem; }
 .order-head { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: .8rem; }
 .order-head h3 { font-size: var(--t-md); }
-.order-head h3 a { color: var(--ink); text-decoration: none; }
+.order-head h3 a {
+  color: var(--ink); text-decoration: none;
+  display: inline-flex; align-items: center; min-height: 44px;
+}
 .order-head h3 a:hover { color: var(--tide-dk); }
 .ref-tag {
   flex: none; font-size: var(--t-xs); font-weight: 800; letter-spacing: .08em;
@@ -618,6 +631,7 @@ fieldset.group > .muted { margin: .3rem 0 .8rem; }
   color: var(--tide); font-weight: 800; font-size: var(--t-xs);
   letter-spacing: .12em; text-transform: uppercase; text-decoration: none;
   margin-right: auto;
+  display: inline-flex; align-items: center; min-height: 40px;
 }
 .admin-bar nav { display: flex; gap: .2rem; }
 .admin-bar nav a {
@@ -631,7 +645,10 @@ fieldset.group > .muted { margin: .3rem 0 .8rem; }
 
 .admin-event { padding: 1rem 1.1rem; }
 .admin-event h2 { font-size: var(--t-md); }
-.admin-event h2 a { color: var(--ink); text-decoration: none; }
+.admin-event h2 a {
+  color: var(--ink); text-decoration: none;
+  display: inline-flex; align-items: center; min-height: 44px;
+}
 .admin-event h2 a:hover { color: var(--tide-dk); }
 .admin-stats { display: flex; gap: 1.5rem; margin: .2rem 0 .8rem; }
 .admin-stats div { display: flex; flex-direction: column; }

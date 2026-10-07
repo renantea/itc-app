@@ -1,0 +1,12 @@
+[Unit]
+Description=ITC Events — nightly database backup
+
+[Timer]
+# 03:15 local. Persistent so a backup missed while the machine was off runs on
+# the next boot rather than being skipped silently.
+OnCalendar=*-*-* 03:15:00
+Persistent=true
+RandomizedDelaySec=300
+
+[Install]
+WantedBy=timers.target

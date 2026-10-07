@@ -35,7 +35,7 @@
 
       <label class="field">
         <span>How many athletes are you entering?</span>
-        <select name="party_size" autofocus>
+        <select name="party_size">
           {% for i in range(1, ceiling + 1) %}
           <option value="{{ i }}">{{ i }} athlete{{ '' if i == 1 else 's' }}</option>
           {% endfor %}
