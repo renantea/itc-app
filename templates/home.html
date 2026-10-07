@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Races &amp; events — {{ club_name }}{% endblock %}
+
+{% block hero %}
+<section class="hero">
+  <div class="wrap">
+    <p class="eyebrow">{{ club_name }}</p>
+    <h1>Pick your race.<br>Bring whoever you like.</h1>
+    <p class="lede">Enter yourself, your kids or the whole club in one go.
+      Every event is free to enter right now.</p>
+    <p class="hero-cta">
+      <a class="btn btn-enter" href="#events">See what's on</a>
+    </p>
+    <div class="disciplines" aria-label="Disciplines">
+      <span class="discipline">Running</span>
+      <span class="discipline">Duathlon</span>
+      <span class="discipline">Triathlon</span>
+      <span class="discipline">Aquathlon</span>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block content %}
+<div class="wrap" id="events">
+  <div class="section-head">
+    <h2>Upcoming races</h2>
+    {% if events %}<span class="muted small">{{ events|length }} event{{ '' if events|length == 1 else 's' }}</span>{% endif %}
+  </div>
+
+  {% if events %}
+  {# Phase 2 replaces this with the real event cards. #}
+  <ul class="card" style="list-style:none">
+    {% for e in events %}
+    <li style="padding:1rem;border-bottom:1px solid var(--line)">
+      <strong>{{ e.name }}</strong>
+      <div class="muted small">{{ e.event_date|racedate }}{% if e.venue %} · {{ e.venue }}{% endif %}</div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <div class="card empty">
+    <h3>No races open yet</h3>
+    <p>The calendar is being set up. Check back shortly — or follow the club
+      for the announcement.</p>
+    <a class="btn" href="https://www.internationaltriathlonclub.com/">Visit the club site</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

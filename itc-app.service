@@ -1,0 +1,22 @@
+# systemd user unit — install to ~/.config/systemd/user/itc-app.service
+# then: systemctl --user daemon-reload && systemctl --user enable --now itc-app
+#
+# Surviving a reboot also needs lingering, once per machine:
+#   loginctl enable-linger $USER
+# Without it a user unit stops when the last session ends and is not started at
+# boot, however enabled it is.
+[Unit]
+Description=ITC Events — race registration (Flask/gunicorn)
+After=network.target
+
+[Service]
+WorkingDirectory=%h/.openclaw/workspace/projects/itc-app
+# Carries ITC_SECRET_KEY: without it the app invents a session key on every
+# start, which silently signs everyone out on each restart.
+EnvironmentFile=%h/.openclaw/workspace/projects/itc-app/.env
+ExecStart=%h/.openclaw/workspace/projects/itc-app/.venv/bin/gunicorn --workers 2 --bind 127.0.0.1:9797 --access-logfile - --error-logfile - wsgi:app
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=default.target

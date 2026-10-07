@@ -1,0 +1,232 @@
+/* ITC Events — mobile-first, no framework.
+ *
+ * The palette is the club's own, lifted from the Astro site so the two look
+ * like one organisation: deep water navy carries the weight, tidal teal is the
+ * energy, and sunrise coral is reserved for the single action that matters on
+ * a page ("Enter this race"). Keeping coral scarce is what makes it read as
+ * "press this" rather than decoration.
+ */
+:root {
+  --deep:    #0a1826;   /* deep water navy — base */
+  --hull:    #10273c;   /* raised surface on deep */
+  --hull-2:  #16344e;
+  --tide:    #14e0c4;   /* tidal teal — cool energy */
+  --tide-dk: #0b8f7f;   /* teal that passes contrast on white */
+  --sun:     #ff5b41;   /* sunrise coral — effort, the one CTA */
+  --sun-dk:  #e04227;
+  --paper:   #f7f9fb;
+  --surface: #ffffff;
+  --ink:     #0a1826;
+  --ink-2:   #33475b;
+  --muted:   #64788c;
+  --line:    #dfe6ed;
+  --line-2:  #c5d1dc;
+  --ok:      #0b8f7f;
+  --warn:    #b45309;
+  --danger:  #b3261e;
+
+  --r-sm: 8px; --r: 12px; --r-lg: 18px; --r-pill: 999px;
+  --shadow-sm: 0 1px 2px rgba(10, 24, 38, .06);
+  --shadow:    0 6px 20px rgba(10, 24, 38, .10);
+  --ease: 150ms cubic-bezier(.2, .8, .2, 1);
+
+  --wrap: 1100px;
+  --header-h: 3.75rem;
+
+  --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  /* Fluid scale: grows with the viewport, so nothing needs a breakpoint just
+     to change size. */
+  --t-xs:  0.75rem;
+  --t-sm:  0.8125rem;
+  --t-base: 0.9375rem;
+  --t-md:  clamp(1rem, .96rem + .2vw, 1.0625rem);
+  --t-lg:  clamp(1.125rem, 1.05rem + .4vw, 1.375rem);
+  --t-xl:  clamp(1.375rem, 1.2rem + .9vw, 1.875rem);
+  --t-2xl: clamp(1.75rem, 1.35rem + 2vw, 3rem);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { -webkit-text-size-adjust: 100%; }
+body {
+  font-family: var(--font);
+  font-size: var(--t-base);
+  line-height: 1.55;
+  color: var(--ink-2);
+  background: var(--paper);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3 { color: var(--ink); line-height: 1.2; letter-spacing: -0.02em; }
+h1 { font-size: var(--t-2xl); font-weight: 800; }
+h2 { font-size: var(--t-xl); font-weight: 750; }
+h3 { font-size: var(--t-lg); font-weight: 700; }
+p { text-wrap: pretty; }
+img, svg { max-width: 100%; display: block; }
+
+/* Links inside running text must look like links. Nav and buttons opt out by
+   carrying their own class. */
+a { color: var(--tide-dk); text-underline-offset: .18em; }
+a:hover { color: var(--ink); }
+
+:focus-visible {
+  outline: 3px solid var(--tide);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+.wrap { width: 100%; max-width: var(--wrap); margin-inline: auto; padding-inline: 1rem; }
+@media (min-width: 48rem) { .wrap { padding-inline: 1.5rem; } }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+/* A skip link that never appears is no skip link at all: reveal it the moment
+   it takes focus, which is the only time anyone needs to see it. */
+a.sr-only:focus {
+  position: fixed; top: .5rem; left: .5rem; z-index: 100;
+  width: auto; height: auto; margin: 0; clip: auto;
+  padding: .7rem 1.1rem; border-radius: var(--r-sm);
+  background: var(--sun); color: #fff; font-weight: 700; text-decoration: none;
+}
+.muted { color: var(--muted); }
+.small { font-size: var(--t-sm); }
+
+/* ── Header ──────────────────────────────────────────── */
+.site-header {
+  background: var(--deep);
+  position: sticky; top: 0; z-index: 50;
+}
+.site-header .wrap {
+  min-height: var(--header-h);
+  display: flex; align-items: center; gap: 1rem;
+}
+.brand {
+  display: inline-flex; align-items: center; gap: .6rem;
+  color: #fff; text-decoration: none; font-weight: 800;
+  letter-spacing: -0.02em; white-space: nowrap;
+  /* Padding, not height: makes the logo a 44px target without changing the bar. */
+  padding-block: .6rem;
+}
+.brand-mark {
+  width: 2rem; height: 2rem; flex: none;
+  border-radius: 9px;
+  background: var(--tide); color: var(--deep);
+  display: grid; place-items: center;
+  font-size: .72rem; font-weight: 800; letter-spacing: .02em;
+}
+.brand small { display: block; font-size: var(--t-xs); font-weight: 600; color: var(--tide); letter-spacing: .09em; text-transform: uppercase; }
+.site-header nav { margin-left: auto; display: flex; align-items: center; gap: .25rem; }
+.nav-link {
+  display: inline-flex; align-items: center;
+  min-height: 44px;                       /* a thumb, not a line of text */
+  color: #c9d8e4; text-decoration: none; font-weight: 600;
+  font-size: var(--t-sm);
+  padding: .4rem .7rem; border-radius: var(--r-sm);
+  transition: color var(--ease), background var(--ease);
+}
+.nav-link:hover, .nav-link[aria-current] { color: #fff; background: rgba(255,255,255,.08); }
+
+/* ── Buttons ─────────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: .45rem;
+  min-height: 44px;                       /* thumb-sized, everywhere */
+  padding: .6rem 1.1rem;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit; font-weight: 700;
+  text-decoration: none; cursor: pointer;
+  transition: transform var(--ease), background var(--ease), border-color var(--ease);
+}
+.btn:hover { background: #eef3f7; color: var(--ink); }
+.btn:active { transform: translateY(1px); }
+/* Coral is the entry action and nothing else. */
+.btn-enter { background: var(--sun); border-color: var(--sun); color: #fff; box-shadow: var(--shadow-sm); }
+.btn-enter:hover { background: var(--sun-dk); border-color: var(--sun-dk); color: #fff; }
+.btn-deep { background: var(--deep); border-color: var(--deep); color: #fff; }
+.btn-deep:hover { background: var(--hull-2); border-color: var(--hull-2); color: #fff; }
+.btn-block { width: 100%; }
+
+/* ── Hero ────────────────────────────────────────────── */
+.hero {
+  background:
+    radial-gradient(1100px 420px at 78% -12%, rgba(20,224,196,.20), transparent 60%),
+    linear-gradient(180deg, var(--deep), var(--hull));
+  color: #e8f1f7;
+  padding: clamp(2.5rem, 7vw, 5rem) 0;
+}
+.hero h1 { color: #fff; }
+.hero .eyebrow {
+  display: inline-flex; align-items: center; gap: .5rem;
+  color: var(--tide); font-size: var(--t-xs); font-weight: 800;
+  letter-spacing: .14em; text-transform: uppercase; margin-bottom: .75rem;
+}
+.hero .lede { color: #b9ccdb; font-size: var(--t-md); max-width: 46ch; margin-top: .85rem; }
+.hero-cta { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1.6rem; }
+/* The disciplines, as a row that scrolls on a phone rather than wrapping into
+   a block that pushes the call to action off the screen. */
+.disciplines {
+  display: flex; gap: .5rem; margin-top: 2rem;
+  overflow-x: auto; scrollbar-width: none; padding-bottom: .2rem;
+}
+.disciplines::-webkit-scrollbar { display: none; }
+.discipline {
+  flex: none;
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: var(--r-pill);
+  padding: .4rem .85rem;
+  font-size: var(--t-sm); font-weight: 700; color: #d8e6f0;
+  white-space: nowrap;
+}
+
+/* ── Content ─────────────────────────────────────────── */
+main { flex: 1; padding-block: clamp(1.75rem, 5vw, 3rem); }
+.section-head { display: flex; align-items: baseline; gap: .75rem; margin-bottom: 1rem; }
+.section-head h2 { margin-right: auto; }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  box-shadow: var(--shadow-sm);
+}
+.empty {
+  text-align: center;
+  padding: clamp(2rem, 6vw, 3.5rem) 1.25rem;
+  color: var(--muted);
+}
+.empty h3 { margin-bottom: .4rem; }
+.empty .btn { margin-top: 1.1rem; }
+
+/* ── Footer ──────────────────────────────────────────── */
+.site-footer {
+  background: var(--deep); color: #90a6b8;
+  padding-block: 2rem; margin-top: 3rem;
+  font-size: var(--t-sm);
+}
+.site-footer strong { color: #fff; }
+.site-footer a { color: var(--tide); }
+.footer-links { display: flex; flex-wrap: wrap; gap: .25rem 1rem; margin-top: .75rem; }
+/* inline-flex, because vertical padding on an inline anchor does not grow its
+   layout box — the link stays a ~23px line of text and misses the thumb. The
+   negative margin keeps the row looking as tight as before. */
+.footer-links a {
+  display: inline-flex; align-items: center; min-height: 44px;
+  font-weight: 600;
+}
+.footer-links { margin-block: calc(.75rem - .55rem) -0.55rem; }
+
+/* ── Error page ──────────────────────────────────────── */
+.error-page { text-align: center; padding: clamp(3rem, 10vw, 6rem) 1rem; }
+.error-page .code { font-size: 4.5rem; font-weight: 800; color: var(--line-2); line-height: 1; }
+.error-page h1 { margin: .75rem 0 .5rem; }
+.error-page p { color: var(--muted); margin-bottom: 1.5rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+}

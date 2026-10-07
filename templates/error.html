@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}{{ code }} — {{ club_name }}{% endblock %}
+{% block content %}
+<div class="wrap">
+  <div class="error-page">
+    <p class="code">{{ code }}</p>
+    <h1>{{ message }}</h1>
+    <p>It may have moved, or the race may have closed.</p>
+    <a class="btn btn-deep" href="{{ url_for('pages.home') }}">Back to events</a>
+  </div>
+</div>
+{% endblock %}

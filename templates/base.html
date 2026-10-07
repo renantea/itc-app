@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a1826">
+<title>{% block title %}{{ club_name }}{% endblock %}</title>
+<meta name="description" content="{% block description %}Race entry for {{ club_name }} — running, duathlon, triathlon and aquathlon.{% endblock %}">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap">
+{# Stamped from the file's mtime, so a CSS change can never be served stale. #}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}?v={{ asset_v('css/app.css') }}">
+{% block head %}{% endblock %}
+</head>
+<body>
+
+<a class="sr-only" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="{{ url_for('pages.home') }}">
+      <span class="brand-mark" aria-hidden="true">ITC</span>
+      <span>Events<small>{{ club_name }}</small></span>
+    </a>
+    <nav aria-label="Main">
+      <a class="nav-link" href="{{ url_for('pages.home') }}"
+         {{ 'aria-current=page' if request.endpoint == 'pages.home' }}>Events</a>
+    </nav>
+  </div>
+</header>
+
+{% block hero %}{% endblock %}
+
+<main id="main">{% block content %}{% endblock %}</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <p><strong>{{ club_name }}</strong> — triathlon for all.</p>
+    <div class="footer-links">
+      <a href="{{ url_for('pages.home') }}">Events</a>
+      <a href="https://www.internationaltriathlonclub.com/">Club site</a>
+    </div>
+    <p class="muted">&copy; {{ now_year }} {{ club_name }}</p>
+  </div>
+</footer>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>
