@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Enter {{ race.name }} — {{ club_name }}{% endblock %}
+
+{% block content %}
+<div class="wrap enter">
+  <a class="back back-ink" href="{{ url_for('pages.event', slug=race.slug) }}">&larr; {{ race.event_name }}</a>
+  {% include "_steps.html" %}
+
+  <div class="card enter-card">
+    <p class="eyebrow-ink">Entering</p>
+    <h1>{{ race.name }}</h1>
+    <p class="muted">{{ race.event_name }} · {{ race.event_date|racedate }}{% if race.venue %} · {{ race.venue }}{% endif %}</p>
+
+    <dl class="spec enter-spec">
+      <div><dt>Discipline</dt><dd>{{ race.discipline|capitalize }}</dd></div>
+      {% if race.swim_distance %}<div><dt>Swim</dt><dd>{{ race.swim_distance }}</dd></div>{% endif %}
+      {% if race.bike_distance %}<div><dt>Bike</dt><dd>{{ race.bike_distance }}</dd></div>{% endif %}
+      {% if race.run_distance %}<div><dt>Run</dt><dd>{{ race.run_distance }}</dd></div>{% endif %}
+      {% if race.start_time %}<div><dt>Start</dt><dd>{{ race.start_time }}</dd></div>{% endif %}
+      <div><dt>Entry</dt><dd>{{ race.price_bhd|money }}{% if race.price_bhd <= 0 %} <span class="muted small">— no payment needed</span>{% endif %}</dd></div>
+      <div><dt>Places</dt><dd>{% if places_left is none %}No limit{% else %}{{ places_left }} left of {{ race.capacity }}{% endif %}</dd></div>
+    </dl>
+
+    {% if resume %}
+    <div class="notice">
+      <p><strong>You have an entry in progress</strong> for this race
+        ({{ resume.party_size }} athlete{{ '' if resume.party_size == 1 else 's' }}).</p>
+      <a class="btn btn-deep" href="{{ url_for('entry.athlete', n=1) }}">Carry on with it</a>
+      <p class="small muted">Starting again below replaces it.</p>
+    </div>
+    {% endif %}
+
+    <form method="post" action="{{ url_for('entry.start', race_id=race.race_id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <label class="field">
+        <span>How many athletes are you entering?</span>
+        <select name="party_size" autofocus>
+          {% for i in range(1, ceiling + 1) %}
+          <option value="{{ i }}">{{ i }} athlete{{ '' if i == 1 else 's' }}</option>
+          {% endfor %}
+        </select>
+        <small class="hint">You'll fill in each athlete on their own screen.
+          Include yourself only if you're racing.</small>
+      </label>
+
+      <button class="btn btn-enter btn-block" type="submit">Start entry</button>
+    </form>
+
+    <div class="enter-note">
+      <h2>Two things worth knowing</h2>
+      <ul>
+        <li><strong>Age groups are worked out for you.</strong> Give each
+          athlete's date of birth and we'll show the category
+          {%- if groups %} — this race has {{ groups|length }} of them{% endif %}.
+          Nobody picks their own.</li>
+        <li><strong>Nothing is entered until you confirm.</strong> You'll see
+          everything on one screen first, and you can go back and change any
+          athlete.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

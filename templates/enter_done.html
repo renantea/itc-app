@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Entry {{ reg.reference }} — {{ club_name }}{% endblock %}
+
+{% block content %}
+<div class="wrap enter">
+  {% include "_steps.html" %}
+
+  <div class="card enter-card done-card">
+    <p class="eyebrow-ink done-tick">You're in</p>
+    <h1>{{ reg.event_name }}</h1>
+    <p class="muted">{{ reg.event_date|racedate('%A %d %B %Y') }}{% if reg.venue %} · {{ reg.venue }}{% endif %}</p>
+
+    <p class="reference">
+      <span>Reference</span>
+      <strong>{{ reg.reference }}</strong>
+    </p>
+
+    <ul class="review-list">
+      {% for e in entries %}
+      <li class="review-athlete">
+        <h2>{{ e.first_name }} {{ e.last_name }}</h2>
+        <p class="chips">
+          <span class="chip chip-{{ e.discipline }}">{{ e.race_name }}</span>
+          {% if e.age_group %}<span class="chip chip-cat">{{ e.age_group }}</span>{% endif %}
+          {% if e.start_time %}<span class="chip">Starts {{ e.start_time }}</span>{% endif %}
+          <span class="chip">{{ e.status|capitalize }}</span>
+        </p>
+      </li>
+      {% endfor %}
+    </ul>
+
+    <div class="enter-note">
+      <h2>What happens next</h2>
+      <ul>
+        <li>Keep the reference — it's how we find your entry.</li>
+        <li>Bib numbers and start waves are published closer to race day.</li>
+        {# Phase 5 builds both of these; saying so beats a dead link. #}
+        <li class="muted">A confirmation email and a withdrawal link are the
+          next thing being built.</li>
+      </ul>
+    </div>
+
+    <a class="btn btn-deep btn-block" href="{{ url_for('pages.event', slug=reg.slug) }}">Back to the event</a>
+  </div>
+</div>
+{% endblock %}

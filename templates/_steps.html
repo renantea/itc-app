@@ -1,0 +1,11 @@
+{# Where you are in the entry, and how much is left. On a four-screen form the
+   count is what stops someone abandoning it. #}
+<ol class="steps" aria-label="Entry progress">
+  {% for name in steps %}
+  <li class="{{ 'is-done' if loop.index < step }}{{ ' is-now' if loop.index == step }}"
+      {{ 'aria-current=step' if loop.index == step }}>
+    <span class="steps-n" aria-hidden="true">{{ loop.index }}</span>
+    <span class="steps-t">{{ name }}</span>
+  </li>
+  {% endfor %}
+</ol>

@@ -70,15 +70,14 @@
           {% endif %}
         </div>
 
-        {# Phase 4 turns this into the entry flow. Until then it says plainly
-           that it is not live, rather than looking live and doing nothing. #}
+        {# A control that cannot be used says so, rather than leading someone
+           into a flow that will refuse them at the end. #}
         {% if is_past or event.status != 'open' %}
           <span class="btn" aria-disabled="true">Entries closed</span>
         {% elif r.is_full %}
           <span class="btn" aria-disabled="true">Race full</span>
         {% else %}
-          <span class="btn btn-enter" aria-disabled="true"
-                title="Entry opens when the registration flow is finished">Entry opening soon</span>
+          <a class="btn btn-enter" href="{{ url_for('entry.start', race_id=r.race_id) }}">Enter this race</a>
         {% endif %}
       </div>
 

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Review your entry — {{ club_name }}{% endblock %}
+
+{% block content %}
+<div class="wrap enter">
+  <a class="back back-ink" href="{{ url_for('entry.athlete', n=rows|length) }}">&larr; Athlete {{ rows|length }}</a>
+  {% include "_steps.html" %}
+
+  <div class="card enter-card">
+    <p class="eyebrow-ink">Nothing is entered yet</p>
+    <h1>Check this over</h1>
+    <p class="muted">{{ race.name }} · {{ race.event_name }} ·
+      {{ race.event_date|racedate }}{% if race.venue %} · {{ race.venue }}{% endif %}</p>
+
+    <ul class="review-list">
+      {% for n, a in rows %}
+      <li class="review-athlete">
+        <div class="review-head">
+          <h2>{{ a.first_name }} {{ a.last_name }}</h2>
+          <a class="edit" href="{{ url_for('entry.athlete', n=n) }}">Change</a>
+        </div>
+        <p class="chips">
+          {% if a.age_group %}<span class="chip chip-cat">{{ a.age_group }}</span>
+          {% else %}<span class="chip">No category set</span>{% endif %}
+          <span class="chip">Age {{ a.age }}</span>
+          <span class="chip">{{ a.gender|capitalize }}</span>
+          {% if a.club %}<span class="chip">{{ a.club }}</span>{% endif %}
+          {% if a.shirt_size %}<span class="chip">Shirt {{ a.shirt_size }}</span>{% endif %}
+        </p>
+        <dl class="spec">
+          <div><dt>Born</dt><dd>{{ a.date_of_birth|racedate('%d %b %Y') }}</dd></div>
+          <div><dt>Emergency</dt><dd>{{ a.emergency_name }} · {{ a.emergency_phone }}</dd></div>
+          {% if a.guardian_name %}<div><dt>Guardian</dt><dd>{{ a.guardian_name }}</dd></div>{% endif %}
+          {% if a.medical_notes %}<div><dt>Medical</dt><dd>{{ a.medical_notes }}</dd></div>{% endif %}
+          <div><dt>Waiver</dt><dd>Accepted</dd></div>
+        </dl>
+      </li>
+      {% endfor %}
+    </ul>
+
+    <p class="small muted">Categories are worked out from each date of birth
+      using {% if rule == 'race_day' %}age on race day{% else %}age on 31
+      December {{ race.event_date[:4] }}{% endif %}.</p>
+
+    <div class="total">
+      <span>{{ rows|length }} athlete{{ '' if rows|length == 1 else 's' }}</span>
+      <strong>{{ total|money }}</strong>
+    </div>
+
+    <form method="post" action="{{ url_for('entry.confirm') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-enter btn-block" type="submit">
+        Confirm {{ 'this entry' if rows|length == 1 else 'these entries' }}
+      </button>
+    </form>
+    <p class="small muted" style="margin-top:.7rem">Places are only held once
+      you confirm.</p>
+  </div>
+</div>
+{% endblock %}

@@ -62,6 +62,29 @@ summary. Only the Eid Aquathlon's name and venue are real (from the club's own
 blog post); dates, distances, start times and capacities are invented and must
 be replaced with ITC's calendar before anyone is invited to enter.
 
+## Entering a race
+
+`/enter/<race_id>` → party size → one screen per athlete → review → confirm.
+
+- **Progress is a database row** (`entry_drafts`), not the session cookie. Four
+  athletes with medical notes exceed the 4 KB a cookie holds, and an oversized
+  cookie is dropped silently — which looks like the app eating your typing.
+  Only an opaque token goes in the session. Abandoned drafts are swept after
+  seven days.
+- **Nothing is written until Confirm.** Capacity, duplicates and eligibility are
+  re-checked at that moment inside one `BEGIN IMMEDIATE` transaction, so two
+  people cannot take the same last place.
+- **Age groups are derived, never chosen** — see `itc/ages.py`. The convention
+  is the `age_rule` setting: `dec31` (World Triathlon, the default) or
+  `race_day` (Ironman). **ITC has not confirmed which they use.** Changing the
+  setting is enough; every entry keeps its date of birth, so categories can be
+  recomputed.
+- **The waiver in `templates/_waiver.html` is a placeholder.** The app records
+  when each athlete accepted it, and that record is worth only what the text
+  says. ITC's own wording must replace it before entries go live.
+
 ## Status
 
-Phases 1–3 of 8 complete — foundation, public event browsing, accounts. See PLAN.md.
+Phases 1–4 of 8 complete — foundation, public event browsing, accounts,
+registration flow. Next: confirmation email and "my registrations" (Phase 5).
+See PLAN.md.

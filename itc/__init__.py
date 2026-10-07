@@ -43,9 +43,11 @@ def create_app(config_object=Config, overrides: dict = None) -> Flask:
         db.init_db(app.config["DATABASE"])
 
     from itc.auth import bp as auth_bp
+    from itc.entry import bp as entry_bp
     from itc.pages import bp as pages_bp
     app.register_blueprint(auth_bp)
     app.register_blueprint(pages_bp)
+    app.register_blueprint(entry_bp)
 
     _register_headers(app)
     _register_errors(app)

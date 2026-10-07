@@ -119,7 +119,7 @@ def test_a_full_race_says_so_and_offers_no_entry(client, app):
     _fill(app, rid, 3)
     body = client.get("/events/full").get_data(as_text=True)
     assert "Full" in body and "Race full" in body
-    assert "Entry opening soon" not in body
+    assert f'href="/enter/{rid}"' not in body
 
 
 def test_an_uncapped_race_does_not_invent_a_limit(client, app):
@@ -132,20 +132,21 @@ def test_an_uncapped_race_does_not_invent_a_limit(client, app):
 
 def test_a_finished_event_does_not_invite_entries(client, app):
     eid = _event(app, "done", "Finished", days=-5, status="completed")
-    _race(app, eid)
+    rid = _race(app, eid)
     body = client.get("/events/done").get_data(as_text=True)
     assert "Entries closed" in body
-    assert "Entry opening soon" not in body
+    assert f'href="/enter/{rid}"' not in body
 
 
-def test_entry_is_honest_about_not_being_live_yet(client, app):
-    """Phase 4 builds the flow. Until then the control must admit it, rather
-    than looking live and doing nothing."""
+def test_an_open_race_links_into_the_entry_flow(client, app):
+    """Phase 4 made this control real. A control that works must not be dressed
+    as disabled, and the ones above must not look live."""
     eid = _event(app, "live", "Open Event", days=15)
-    _race(app, eid)
+    rid = _race(app, eid)
     body = client.get("/events/live").get_data(as_text=True)
-    assert "Entry opening soon" in body
-    assert 'aria-disabled="true"' in body
+    assert f'href="/enter/{rid}"' in body
+    assert "Enter this race" in body
+    assert 'aria-disabled="true"' not in body
 
 
 def test_age_groups_are_listed_and_explained(client, app):

@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block title %}Athlete {{ n }} of {{ draft.party_size }} — {{ club_name }}{% endblock %}
+
+{% block content %}
+<div class="wrap enter">
+  {% if n > 1 %}
+    <a class="back back-ink" href="{{ url_for('entry.athlete', n=n-1) }}">&larr; Athlete {{ n - 1 }}</a>
+  {% else %}
+    <a class="back back-ink" href="{{ url_for('entry.start', race_id=race.race_id) }}">&larr; Start over</a>
+  {% endif %}
+  {% include "_steps.html" %}
+
+  <div class="card enter-card">
+    <p class="eyebrow-ink">Athlete {{ n }} of {{ draft.party_size }}</p>
+    <h1>Who's racing?</h1>
+    <p class="muted">{{ race.name }} · {{ race.event_date|racedate }}</p>
+
+    {# Each athlete's progress through the party, as dots rather than prose. #}
+    {% if draft.party_size > 1 %}
+    <p class="party-dots" aria-hidden="true">
+      {% for i in range(1, draft.party_size + 1) %}
+      <span class="dot-{{ 'now' if i == n else ('done' if draft.data.get(i|string) else 'todo') }}"></span>
+      {% endfor %}
+    </p>
+    {% endif %}
+
+    {% if prefilled %}
+    <p class="notice-inline">Filled in from your account — change it if athlete
+      1 isn't you.</p>
+    {% endif %}
+
+    <form method="post" action="{{ url_for('entry.athlete', n=n) }}" novalidate>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <div class="pair">
+        <label class="field">
+          <span>First name</span>
+          <input type="text" name="first_name" value="{{ form.get('first_name','') }}"
+                 required autocomplete="off" autofocus>
+        </label>
+        <label class="field">
+          <span>Last name</span>
+          <input type="text" name="last_name" value="{{ form.get('last_name','') }}"
+                 required autocomplete="off">
+        </label>
+      </div>
+
+      <div class="pair">
+        <label class="field">
+          <span>Date of birth</span>
+          <input type="date" name="date_of_birth" value="{{ form.get('date_of_birth','') }}"
+                 required max="{{ today.isoformat() }}" min="1920-01-01">
+          <small class="hint">Your age group comes from this.</small>
+        </label>
+        <label class="field">
+          <span>Gender</span>
+          <select name="gender" required>
+            <option value="">Choose…</option>
+            {% for value, label in genders %}
+            <option value="{{ value }}" {{ 'selected' if form.get('gender') == value }}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </label>
+      </div>
+
+      <label class="field">
+        <span>Parent or guardian <span class="muted">(under {{ guardian_age }}s only)</span></span>
+        <input type="text" name="guardian_name" value="{{ form.get('guardian_name','') }}"
+               autocomplete="off">
+        <small class="hint">Required if this athlete is under {{ guardian_age }} on race day.</small>
+      </label>
+
+      <fieldset class="group">
+        <legend>In case of emergency</legend>
+        <p class="small muted">Someone who is <em>not</em> racing, if possible.
+          Race medical staff get this on the day.</p>
+        <div class="pair">
+          <label class="field">
+            <span>Contact name</span>
+            <input type="text" name="emergency_name" value="{{ form.get('emergency_name','') }}"
+                   required autocomplete="off">
+          </label>
+          <label class="field">
+            <span>Contact number</span>
+            <input type="tel" name="emergency_phone" value="{{ form.get('emergency_phone','') }}"
+                   required inputmode="tel" autocomplete="off">
+          </label>
+        </div>
+        <label class="field">
+          <span>Medical notes <span class="muted">(optional)</span></span>
+          <textarea name="medical_notes" rows="2" maxlength="{{ max_note }}"
+                    placeholder="Asthma — carries an inhaler">{{ form.get('medical_notes','') }}</textarea>
+          <small class="hint">One line a marshal could act on. Not a medical history.</small>
+        </label>
+      </fieldset>
+
+      <fieldset class="group">
+        <legend>Optional details</legend>
+        <div class="pair">
+          <label class="field">
+            <span>Athlete email</span>
+            <input type="email" name="email" value="{{ form.get('email','') }}"
+                   autocomplete="off" autocapitalize="none" spellcheck="false"
+                   inputmode="email">
+          </label>
+          <label class="field">
+            <span>Athlete mobile</span>
+            <input type="tel" name="phone" value="{{ form.get('phone','') }}"
+                   inputmode="tel" autocomplete="off">
+          </label>
+        </div>
+        <div class="pair">
+          <label class="field">
+            <span>Club or team</span>
+            <input type="text" name="club" value="{{ form.get('club','') }}" autocomplete="off">
+          </label>
+          <label class="field">
+            <span>Shirt size</span>
+            <select name="shirt_size">
+              <option value="">Not needed</option>
+              {% for s in shirts %}
+              <option value="{{ s }}" {{ 'selected' if form.get('shirt_size') == s }}>{{ s }}</option>
+              {% endfor %}
+            </select>
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset class="group">
+        <legend>Waiver</legend>
+        {% include "_waiver.html" %}
+        <label class="check">
+          <input type="checkbox" name="waiver" value="on" required
+                 {{ 'checked' if form.get('waiver') }}>
+          <span>I accept this on behalf of
+            {{ form.get('first_name') or 'this athlete' }}.</span>
+        </label>
+      </fieldset>
+
+      <button class="btn btn-enter btn-block" type="submit">
+        {% if n < draft.party_size %}Save and add athlete {{ n + 1 }}{% else %}Review the entry{% endif %}
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}

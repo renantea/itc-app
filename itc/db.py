@@ -140,6 +140,9 @@ CREATE TABLE IF NOT EXISTS entries (
     emergency_name  TEXT,
     emergency_phone TEXT,
     medical_notes   TEXT,
+    -- Required for under-18s, empty for adults. Held on the entry, not the
+    -- account: the account holder is not always the guardian.
+    guardian_name   TEXT,
     -- Null until accepted. A timestamp rather than a flag, because "when did
     -- they agree" is the question that gets asked after an incident.
     waiver_accepted_at TEXT,
@@ -151,6 +154,27 @@ CREATE TABLE IF NOT EXISTS entries (
 );
 CREATE INDEX IF NOT EXISTS ix_entries_race ON entries(race_id, status);
 CREATE INDEX IF NOT EXISTS ix_entries_registration ON entries(registration_id);
+
+-- A half-finished entry form. Entering a family of four is several screens,
+-- and a phone on race-day wifi will drop one of them.
+--
+-- This is a table rather than the session cookie on purpose: four athletes
+-- with medical notes is comfortably past the 4 KB a cookie holds, and the
+-- failure mode there is silent — the browser drops the cookie and the entrant
+-- watches their typing disappear. Only an opaque token lives in the session.
+CREATE TABLE IF NOT EXISTS entry_drafts (
+    draft_id   INTEGER PRIMARY KEY AUTOINCREMENT,
+    token      TEXT NOT NULL UNIQUE,
+    user_id    INTEGER NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    race_id    INTEGER NOT NULL REFERENCES races(race_id) ON DELETE CASCADE,
+    party_size INTEGER NOT NULL DEFAULT 1,
+    -- JSON, keyed by the athlete's position in the party. Deliberately not
+    -- columns: this is throwaway form state, and its shape follows the form.
+    payload    TEXT NOT NULL DEFAULT '{}',
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ix_entry_drafts_user ON entry_drafts(user_id, updated_at DESC);
 
 CREATE TABLE IF NOT EXISTS settings (
     key   TEXT PRIMARY KEY,
@@ -197,10 +221,18 @@ def init_db(path: str = None) -> None:
 def _migrate(conn) -> None:
     """Bring a database made by an earlier version up to date.
 
-    Empty today — the schema above is the first one. Kept so later phases add
-    columns here rather than inventing a migration mechanism under pressure.
+    New *tables* need nothing here — `CREATE TABLE IF NOT EXISTS` in SCHEMA
+    runs on every boot. New *columns* on an existing table do, because SQLite
+    will not rewrite one. Adding a column is the one safe ALTER; changing a
+    CHECK or a type needs the full rebuild dance, so prefer additive changes.
     """
-    return
+    _add_column(conn, "entries", "guardian_name", "TEXT")
+
+
+def _add_column(conn, table: str, column: str, decl: str) -> None:
+    present = {r["name"] for r in conn.execute(f"PRAGMA table_info({table})")}
+    if column not in present:
+        conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {decl}")
 
 
 def now() -> str:
@@ -256,6 +288,23 @@ class transaction:
         else:
             self.conn.rollback()
         return False
+
+
+class exclusive_transaction(transaction):
+    """A transaction that takes the write lock *before* it reads.
+
+    `transaction` is enough for ordinary writes. This one exists for capacity:
+    counting places and then inserting an entry is only safe if nobody else
+    can insert in between, and a plain deferred transaction does not promise
+    that — the count happens outside any lock, so two entrants can both read
+    "1 place left" and both take it. BEGIN IMMEDIATE grabs the write lock on
+    entry, which serialises the count and the insert as one step.
+    """
+
+    def __enter__(self):
+        self.conn = get_db()
+        self.conn.execute("BEGIN IMMEDIATE")
+        return self.conn
 
 
 def race_taken(conn, race_id: int) -> int:
