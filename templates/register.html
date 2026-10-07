@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Create an account — {{ club_name }}{% endblock %}
+{% block content %}
+<div class="wrap">
+  <div class="auth-card card">
+    <h1>Create an account</h1>
+    <p class="muted">One account enters everyone — you, your kids, your club.
+      You'll add each athlete's details when you enter a race.</p>
+
+    <form method="post" action="{{ url_for('auth.register', next=request.args.get('next','')) }}" novalidate>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <label class="field">
+        <span>Your name</span>
+        <input type="text" name="full_name" value="{{ form.get('full_name','') }}"
+               required autocomplete="name" autofocus>
+      </label>
+
+      <label class="field">
+        <span>Email</span>
+        <input type="email" name="email" value="{{ form.get('email','') }}" required
+               autocomplete="email" autocapitalize="none" spellcheck="false"
+               inputmode="email">
+      </label>
+
+      <label class="field">
+        <span>Mobile <span class="muted">(optional)</span></span>
+        <input type="tel" name="phone" value="{{ form.get('phone','') }}"
+               autocomplete="tel" inputmode="tel">
+        <small class="hint">Only used if we need to reach you on race day.</small>
+      </label>
+
+      <label class="field">
+        <span>Password</span>
+        <input type="password" name="password" required autocomplete="new-password"
+               minlength="10">
+        <small class="hint">At least 10 characters. Length matters more than symbols.</small>
+      </label>
+
+      <button class="btn btn-enter btn-block" type="submit">Create account</button>
+    </form>
+
+    <p class="auth-alt">Already have one? <a href="{{ url_for('auth.login', next=request.args.get('next','')) }}">Sign in</a></p>
+  </div>
+</div>
+{% endblock %}

@@ -42,7 +42,9 @@ def create_app(config_object=Config, overrides: dict = None) -> Flask:
     if app.config["DATABASE"] != ":memory:":
         db.init_db(app.config["DATABASE"])
 
+    from itc.auth import bp as auth_bp
     from itc.pages import bp as pages_bp
+    app.register_blueprint(auth_bp)
     app.register_blueprint(pages_bp)
 
     _register_headers(app)
@@ -84,6 +86,7 @@ def _register_headers(app: Flask) -> None:
 
 def _register_errors(app: Flask) -> None:
     messages = {
+        400: "That request didn't look right",
         403: "You don't have access to this page",
         404: "That page doesn't exist",
         413: "That upload is too large",
@@ -121,10 +124,14 @@ def _register_template_helpers(app: Flask) -> None:
 
     @app.context_processor
     def inject():
+        from flask import g
+        from itc.auth import csrf_token
         return {
             "club_name": get_setting("club_name", "International Triathlon Club"),
             "now_year": datetime.now(timezone.utc).year,
             "asset_v": _asset_version,
+            "csrf_token": csrf_token,
+            "current_user": g.get("user"),
         }
 
 

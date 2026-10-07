@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Sign in — {{ club_name }}{% endblock %}
+{% block content %}
+<div class="wrap">
+  <div class="auth-card card">
+    <h1>Sign in</h1>
+    <p class="muted">Enter races for yourself or anyone you're bringing.</p>
+
+    <form method="post" action="{{ url_for('auth.login', next=request.args.get('next','')) }}" novalidate>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <label class="field">
+        <span>Email</span>
+        <input type="email" name="email" value="{{ email }}" required
+               autocomplete="email" autocapitalize="none" spellcheck="false"
+               inputmode="email" autofocus>
+      </label>
+
+      <label class="field">
+        <span>Password</span>
+        <input type="password" name="password" required autocomplete="current-password">
+      </label>
+
+      <button class="btn btn-enter btn-block" type="submit">Sign in</button>
+    </form>
+
+    <p class="auth-alt">New here? <a href="{{ url_for('auth.register', next=request.args.get('next','')) }}">Create an account</a></p>
+  </div>
+</div>
+{% endblock %}

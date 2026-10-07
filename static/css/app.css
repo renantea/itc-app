@@ -102,8 +102,9 @@ a.sr-only:focus {
 }
 .site-header .wrap {
   min-height: var(--header-h);
-  display: flex; align-items: center; gap: 1rem;
+  display: flex; align-items: center; gap: .5rem;
 }
+@media (min-width: 30rem) { .site-header .wrap { gap: 1rem; } }
 .brand {
   display: inline-flex; align-items: center; gap: .6rem;
   color: #fff; text-decoration: none; font-weight: 800;
@@ -118,16 +119,35 @@ a.sr-only:focus {
   display: grid; place-items: center;
   font-size: .72rem; font-weight: 800; letter-spacing: .02em;
 }
-.brand small { display: block; font-size: var(--t-xs); font-weight: 600; color: var(--tide); letter-spacing: .09em; text-transform: uppercase; }
-.site-header nav { margin-left: auto; display: flex; align-items: center; gap: .25rem; }
+/* The club's full name costs ~180px in the bar — enough to push the whole nav
+   off a 390px screen once someone is signed in and there are three items. It
+   is hidden on small screens; the hero and footer still carry it. */
+.brand small { display: none; }
+@media (min-width: 30rem) {
+  .brand small {
+    display: block; font-size: var(--t-xs); font-weight: 600;
+    color: var(--tide); letter-spacing: .09em; text-transform: uppercase;
+  }
+}
+/* min-width:0 so the nav may shrink rather than forcing the bar wider than
+   the screen; the brand truncates before the nav is pushed out of reach. */
+.site-header nav {
+  margin-left: auto; display: flex; align-items: center; gap: .1rem;
+  flex: 0 1 auto; min-width: 0;
+}
+@media (min-width: 30rem) { .site-header nav { gap: .25rem; } }
+.brand { min-width: 0; overflow: hidden; }
+.brand > span { overflow: hidden; text-overflow: ellipsis; }
 .nav-link {
   display: inline-flex; align-items: center;
   min-height: 44px;                       /* a thumb, not a line of text */
   color: #c9d8e4; text-decoration: none; font-weight: 600;
   font-size: var(--t-sm);
-  padding: .4rem .7rem; border-radius: var(--r-sm);
+  padding: .4rem .5rem; border-radius: var(--r-sm);
+  white-space: nowrap;
   transition: color var(--ease), background var(--ease);
 }
+@media (min-width: 30rem) { .nav-link { padding-inline: .7rem; } }
 .nav-link:hover, .nav-link[aria-current] { color: #fff; background: rgba(255,255,255,.08); }
 
 /* ── Buttons ─────────────────────────────────────────── */
@@ -345,3 +365,47 @@ main { flex: 1; padding-block: clamp(1.75rem, 5vw, 3rem); }
   font-size: var(--t-sm); background: var(--paper);
   border: 1px solid var(--line); border-radius: var(--r-pill); padding: .25rem .65rem;
 }
+
+/* ── Forms & auth ────────────────────────────────────── */
+.auth-card { max-width: 26rem; margin-inline: auto; padding: 1.4rem; }
+.auth-card h1 { font-size: var(--t-xl); }
+.auth-card > .muted { margin-top: .35rem; margin-bottom: 1.2rem; }
+.auth-alt { margin-top: 1rem; text-align: center; font-size: var(--t-sm); }
+
+.field { display: block; margin-bottom: 1rem; }
+.field > span {
+  display: block; font-size: var(--t-sm); font-weight: 700;
+  color: var(--ink); margin-bottom: .3rem;
+}
+.field input, .field select, .field textarea {
+  width: 100%;
+  /* 16px exactly: anything smaller makes iOS Safari zoom on focus, which
+     yanks the form around mid-entry. */
+  font: inherit; font-size: 16px;
+  min-height: 44px;
+  padding: .55rem .75rem;
+  border: 1px solid var(--line-2); border-radius: var(--r-sm);
+  background: var(--surface); color: var(--ink);
+}
+.field input:focus { border-color: var(--tide-dk); }
+.field .hint { display: block; font-size: var(--t-xs); color: var(--muted); margin-top: .3rem; }
+
+/* ── Flash messages ──────────────────────────────────── */
+.flashes { margin-top: 1rem; display: grid; gap: .5rem; }
+.flash {
+  padding: .7rem .9rem; border-radius: var(--r-sm);
+  font-size: var(--t-sm); font-weight: 600;
+  border: 1px solid transparent;
+}
+.flash-ok    { background: #e3f7f3; color: #0b5d53; border-color: #b9e8df; }
+.flash-error { background: #fdecea; color: #8c1d16; border-color: #f6cfcb; }
+
+/* A sign-out button that reads as a nav link, without being a link — it
+   changes state, so it must be a POST. */
+.nav-form { display: inline-flex; }
+.nav-btn { background: none; border: 0; font: inherit; cursor: pointer; }
+
+.spec { display: grid; gap: .6rem; }
+.spec > div { display: flex; gap: .75rem; align-items: baseline; }
+.spec dt { flex: none; width: 5.5rem; font-size: var(--t-sm); color: var(--muted); font-weight: 600; }
+.spec dd { font-weight: 600; color: var(--ink); min-width: 0; word-break: break-word; }

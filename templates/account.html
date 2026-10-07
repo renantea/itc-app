@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Your account — {{ club_name }}{% endblock %}
+{% block content %}
+<div class="wrap">
+  <div class="section-head"><h1>Your account</h1></div>
+
+  <div class="card" style="padding:1.1rem">
+    <dl class="spec">
+      <div><dt>Name</dt><dd>{{ current_user.full_name }}</dd></div>
+      <div><dt>Email</dt><dd>{{ current_user.email }}</dd></div>
+      {% if current_user.phone %}<div><dt>Mobile</dt><dd>{{ current_user.phone }}</dd></div>{% endif %}
+    </dl>
+  </div>
+
+  <div class="card empty" style="margin-top:1rem">
+    <h3>No entries yet</h3>
+    <p>Races you've entered will appear here once entry opens.</p>
+    <a class="btn btn-deep" href="{{ url_for('pages.home') }}">See what's on</a>
+  </div>
+</div>
+{% endblock %}

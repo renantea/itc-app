@@ -64,4 +64,4 @@ be replaced with ITC's calendar before anyone is invited to enter.
 
 ## Status
 
-Phases 1–2 of 8 complete — foundation, and public event browsing. See PLAN.md.
+Phases 1–3 of 8 complete — foundation, public event browsing, accounts. See PLAN.md.
