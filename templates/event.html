@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}{{ event.name }} — {{ club_name }}{% endblock %}
+{% block description %}{{ event.summary or event.name }}{% endblock %}
+
+{% block hero %}
+<section class="hero hero-event">
+  <div class="wrap">
+    <a class="back" href="{{ url_for('pages.home') }}">&larr; All events</a>
+    <h1>{{ event.name }}</h1>
+    <p class="event-facts">
+      <span>{{ event.event_date|racedate('%A %d %B %Y') }}</span>
+      {% if event.venue %}<span class="dot">·</span><span>{{ event.venue }}</span>{% endif %}
+    </p>
+    <p>
+      {% if is_past or event.status == 'completed' %}<span class="pill pill-done">Completed</span>
+      {% elif event.status == 'open' %}<span class="pill pill-open">Entries open</span>
+      {% else %}<span class="pill pill-shut">Entries closed</span>{% endif %}
+    </p>
+    {% if event.description %}<p class="lede">{{ event.description }}</p>{% endif %}
+  </div>
+</section>
+{% endblock %}
+
+{% block content %}
+<div class="wrap">
+  <div class="section-head"><h2>Races</h2></div>
+
+  {% if not races %}
+    <div class="card empty">
+      <h3>Distances not published yet</h3>
+      <p>The race options for this event are still being confirmed.</p>
+    </div>
+  {% else %}
+  <div class="race-list">
+    {% for r in races %}
+    <article class="race card">
+      <div class="race-head">
+        <div>
+          <h3>{{ r.name }}</h3>
+          <p class="chips">
+            <span class="chip chip-{{ r.discipline }}">{{ r.discipline|capitalize }}</span>
+            {% if r.start_time %}<span class="chip">Starts {{ r.start_time }}</span>{% endif %}
+            {% if r.min_age %}<span class="chip">Age {{ r.min_age }}+</span>{% endif %}
+          </p>
+        </div>
+        <div class="race-price">{{ r.price_bhd|money }}</div>
+      </div>
+
+      {# Only the legs this discipline actually has. #}
+      <dl class="legs">
+        {% if r.swim_distance %}<div><dt>Swim</dt><dd>{{ r.swim_distance }}</dd></div>{% endif %}
+        {% if r.bike_distance %}<div><dt>Bike</dt><dd>{{ r.bike_distance }}</dd></div>{% endif %}
+        {% if r.run_distance %}<div><dt>Run</dt><dd>{{ r.run_distance }}</dd></div>{% endif %}
+      </dl>
+
+      <div class="race-foot">
+        <div class="capacity">
+          {% if r.capacity is none %}
+            <span class="muted small">No entry limit</span>
+          {% elif r.is_full %}
+            <span class="cap-full">Full — {{ r.capacity }} places taken</span>
+          {% else %}
+            {% set pct = (r.taken / r.capacity * 100) if r.capacity else 0 %}
+            <div class="cap-bar" role="img"
+                 aria-label="{{ r.places_left }} of {{ r.capacity }} places left">
+              <span style="width:{{ pct|round(0, 'ceil') }}%"></span>
+            </div>
+            <span class="small {{ 'cap-low' if r.places_left <= 10 }}">
+              {{ r.places_left }} of {{ r.capacity }} places left</span>
+          {% endif %}
+        </div>
+
+        {# Phase 4 turns this into the entry flow. Until then it says plainly
+           that it is not live, rather than looking live and doing nothing. #}
+        {% if is_past or event.status != 'open' %}
+          <span class="btn" aria-disabled="true">Entries closed</span>
+        {% elif r.is_full %}
+          <span class="btn" aria-disabled="true">Race full</span>
+        {% else %}
+          <span class="btn btn-enter" aria-disabled="true"
+                title="Entry opens when the registration flow is finished">Entry opening soon</span>
+        {% endif %}
+      </div>
+
+      {% if r.age_groups %}
+      <details class="age-groups">
+        <summary>Age groups ({{ r.age_groups|length }})</summary>
+        <ul>
+          {% for g in r.age_groups %}
+          <li><strong>{{ g.label }}</strong>{% if g.gender != 'any' %} <span class="muted">· {{ g.gender|capitalize }}</span>{% endif %}</li>
+          {% endfor %}
+        </ul>
+        <p class="small muted">Your group is worked out from your date of birth
+          when you enter — you won't need to pick it.</p>
+      </details>
+      {% endif %}
+    </article>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

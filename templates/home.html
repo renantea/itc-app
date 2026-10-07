@@ -1,6 +1,33 @@
 {% extends "base.html" %}
 {% block title %}Races &amp; events — {{ club_name }}{% endblock %}
 
+{% macro event_card(e, past=False) %}
+<a class="event-card{{ ' is-past' if past }}" href="{{ url_for('pages.event', slug=e.slug) }}">
+  <div class="event-date" aria-hidden="true">
+    <span class="d">{{ e.event_date|racedate('%d') }}</span>
+    <span class="m">{{ e.event_date|racedate('%b') }}</span>
+  </div>
+  <div class="event-main">
+    <h3>{{ e.name }}</h3>
+    <p class="event-meta">
+      <span>{{ e.event_date|racedate }}</span>
+      {% if e.venue %}<span class="dot">·</span><span>{{ e.venue }}</span>{% endif %}
+    </p>
+    {% if e.disciplines %}
+    <p class="chips">
+      {% for d in e.disciplines.split(',')|sort %}<span class="chip chip-{{ d }}">{{ d|capitalize }}</span>{% endfor %}
+    </p>
+    {% endif %}
+  </div>
+  <div class="event-end">
+    {% if e.status == 'open' and not past %}<span class="pill pill-open">Entries open</span>
+    {% elif e.status == 'closed' %}<span class="pill pill-shut">Entries closed</span>
+    {% elif e.status == 'completed' %}<span class="pill pill-done">Completed</span>{% endif %}
+    <span class="small muted">{{ e.race_count }} race{{ '' if e.race_count == 1 else 's' }}</span>
+  </div>
+</a>
+{% endmacro %}
+
 {% block hero %}
 <section class="hero">
   <div class="wrap">
@@ -29,22 +56,21 @@
   </div>
 
   {% if events %}
-  {# Phase 2 replaces this with the real event cards. #}
-  <ul class="card" style="list-style:none">
-    {% for e in events %}
-    <li style="padding:1rem;border-bottom:1px solid var(--line)">
-      <strong>{{ e.name }}</strong>
-      <div class="muted small">{{ e.event_date|racedate }}{% if e.venue %} · {{ e.venue }}{% endif %}</div>
-    </li>
-    {% endfor %}
-  </ul>
+    <div class="event-list">{% for e in events %}{{ event_card(e) }}{% endfor %}</div>
   {% else %}
-  <div class="card empty">
-    <h3>No races open yet</h3>
-    <p>The calendar is being set up. Check back shortly — or follow the club
-      for the announcement.</p>
-    <a class="btn" href="https://www.internationaltriathlonclub.com/">Visit the club site</a>
+    <div class="card empty">
+      <h3>No races open yet</h3>
+      <p>The calendar is being set up. Check back shortly — or follow the club
+        for the announcement.</p>
+      <a class="btn" href="https://www.internationaltriathlonclub.com/">Visit the club site</a>
+    </div>
+  {% endif %}
+
+  {% if past %}
+  <div class="section-head" style="margin-top:2.5rem">
+    <h2>Been and gone</h2>
   </div>
+  <div class="event-list">{% for e in past %}{{ event_card(e, past=True) }}{% endfor %}</div>
   {% endif %}
 </div>
 {% endblock %}

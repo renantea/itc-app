@@ -51,6 +51,17 @@ one start line.
 adding the column now means that phase is a feature rather than a migration of
 live registrations.
 
+## Seed data
+
+```bash
+.venv/bin/python seed_events.py        # idempotent
+```
+
+Everything it writes is **sample data** and is tagged as such in each event's
+summary. Only the Eid Aquathlon's name and venue are real (from the club's own
+blog post); dates, distances, start times and capacities are invented and must
+be replaced with ITC's calendar before anyone is invited to enter.
+
 ## Status
 
-Phase 1 of 8 complete — foundation, schema, service, theme. See PLAN.md.
+Phases 1–2 of 8 complete — foundation, and public event browsing. See PLAN.md.

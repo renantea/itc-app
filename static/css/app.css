@@ -230,3 +230,118 @@ main { flex: 1; padding-block: clamp(1.75rem, 5vw, 3rem); }
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: .001ms !important; transition-duration: .001ms !important; }
 }
+
+/* ── Event list ──────────────────────────────────────── */
+.event-list { display: grid; gap: .75rem; }
+.event-card {
+  display: grid;
+  /* Date block, then the flexible middle, then status. On a phone the status
+     drops under the text rather than squeezing the event name to nothing. */
+  grid-template-columns: auto 1fr;
+  gap: .9rem;
+  padding: .9rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--tide);
+  border-radius: var(--r);
+  box-shadow: var(--shadow-sm);
+  text-decoration: none; color: inherit;
+  transition: transform var(--ease), box-shadow var(--ease), border-color var(--ease);
+}
+.event-card:hover { transform: translateY(-1px); box-shadow: var(--shadow); color: inherit; }
+.event-card.is-past { border-left-color: var(--line-2); opacity: .78; }
+.event-date {
+  flex: none; width: 3.4rem;
+  display: grid; place-content: center; justify-items: center;
+  background: var(--deep); color: #fff;
+  border-radius: var(--r-sm); padding: .5rem .25rem;
+}
+.event-date .d { font-size: 1.4rem; font-weight: 800; line-height: 1; }
+.event-date .m { font-size: var(--t-xs); font-weight: 700; text-transform: uppercase; color: var(--tide); letter-spacing: .06em; }
+.event-main { min-width: 0; }
+.event-main h3 { font-size: var(--t-md); margin-bottom: .15rem; }
+.event-meta { font-size: var(--t-sm); color: var(--muted); }
+.event-meta .dot, .event-facts .dot { margin-inline: .4rem; }
+.event-end {
+  grid-column: 2; display: flex; align-items: center; gap: .5rem; flex-wrap: wrap;
+}
+@media (min-width: 40rem) {
+  .event-card { grid-template-columns: auto 1fr auto; align-items: center; }
+  .event-end { grid-column: auto; flex-direction: column; align-items: flex-end; gap: .3rem; }
+}
+
+.chips { display: flex; flex-wrap: wrap; gap: .3rem; margin-top: .4rem; }
+.chip {
+  font-size: var(--t-xs); font-weight: 700;
+  padding: .2rem .55rem; border-radius: var(--r-pill);
+  background: #eef3f7; color: var(--ink-2);
+}
+/* One tint per discipline, so the four are scannable at a glance. */
+.chip-running   { background: #fdeee9; color: #a8341a; }
+.chip-duathlon  { background: #fff3dc; color: #8a5a00; }
+.chip-triathlon { background: #e3f7f3; color: #0b6a5e; }
+.chip-aquathlon { background: #e6f0fb; color: #1b4a8f; }
+
+.pill {
+  font-size: var(--t-xs); font-weight: 800; letter-spacing: .02em;
+  padding: .25rem .6rem; border-radius: var(--r-pill); white-space: nowrap;
+}
+.pill-open { background: #e3f7f3; color: #0b6a5e; }
+.pill-shut { background: #f1f4f7; color: var(--muted); }
+.pill-done { background: #eef1f4; color: #52606d; }
+
+/* ── Event detail ────────────────────────────────────── */
+.hero-event h1 { margin-top: .35rem; }
+.hero-event .event-facts { color: #b9ccdb; font-size: var(--t-md); margin-top: .4rem; }
+.hero-event .lede { margin-top: 1rem; max-width: 60ch; }
+.back {
+  display: inline-flex; align-items: center; min-height: 44px;
+  color: var(--tide); text-decoration: none; font-weight: 700; font-size: var(--t-sm);
+}
+.back:hover { color: #fff; }
+
+.race-list { display: grid; gap: 1rem; }
+.race { padding: 1rem 1.1rem; }
+.race-head { display: flex; align-items: flex-start; gap: 1rem; }
+.race-head h3 { font-size: var(--t-md); }
+.race-price {
+  margin-left: auto; flex: none;
+  font-weight: 800; color: var(--tide-dk); white-space: nowrap;
+}
+
+.legs {
+  display: flex; flex-wrap: wrap; gap: .5rem;
+  margin-top: .9rem; padding-top: .9rem; border-top: 1px solid var(--line);
+}
+.legs > div {
+  flex: 1 1 7rem; min-width: 0;
+  background: var(--paper); border-radius: var(--r-sm); padding: .5rem .7rem;
+}
+.legs dt { font-size: var(--t-xs); font-weight: 800; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.legs dd { font-size: var(--t-md); font-weight: 700; color: var(--ink); }
+
+.race-foot {
+  display: flex; flex-wrap: wrap; align-items: center; gap: .75rem;
+  margin-top: .9rem; padding-top: .9rem; border-top: 1px solid var(--line);
+}
+.capacity { flex: 1 1 11rem; min-width: 0; }
+.cap-bar {
+  height: 6px; border-radius: var(--r-pill);
+  background: var(--line); overflow: hidden; margin-bottom: .35rem;
+}
+.cap-bar span { display: block; height: 100%; background: var(--tide-dk); }
+.cap-low { color: var(--warn); font-weight: 700; }
+.cap-full { color: var(--danger); font-weight: 700; font-size: var(--t-sm); }
+/* An inert control must look inert, or it reads as broken rather than pending. */
+.race-foot .btn[aria-disabled="true"] { opacity: .65; cursor: not-allowed; }
+
+.age-groups { margin-top: .9rem; border-top: 1px solid var(--line); padding-top: .75rem; }
+.age-groups summary {
+  cursor: pointer; font-weight: 700; font-size: var(--t-sm); color: var(--ink);
+  min-height: 32px; display: flex; align-items: center;
+}
+.age-groups ul { list-style: none; display: flex; flex-wrap: wrap; gap: .4rem; margin: .6rem 0; }
+.age-groups li {
+  font-size: var(--t-sm); background: var(--paper);
+  border: 1px solid var(--line); border-radius: var(--r-pill); padding: .25rem .65rem;
+}
