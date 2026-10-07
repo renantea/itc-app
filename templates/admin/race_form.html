@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}{{ 'New race' if creating else race.name }} — {{ club_name }}{% endblock %}
+{% block hero %}{% include "admin/_nav.html" %}{% endblock %}
+
+{% block content %}
+<div class="wrap enter">
+  <a class="back back-ink" href="{{ url_for('admin.event_edit', event_id=event.event_id) }}">&larr; {{ event.name }}</a>
+
+  <div class="card enter-card">
+    <p class="eyebrow-ink">{{ 'New race' if creating else 'Editing race' }}</p>
+    <h1>{{ 'Add a race' if creating else race.name }}</h1>
+    <p class="muted">{{ event.name }} · {{ event.event_date|racedate }}</p>
+
+    <form method="post" novalidate
+          action="{{ url_for('admin.race_new', event_id=event.event_id) if creating else url_for('admin.race_edit', race_id=race.race_id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <div class="pair">
+        <label class="field">
+          <span>Name</span>
+          <input type="text" name="name" value="{{ race.get('name','') }}" required autofocus>
+        </label>
+        <label class="field">
+          <span>Discipline</span>
+          <select name="discipline" required>
+            {% for d in disciplines %}
+            <option value="{{ d }}" {{ 'selected' if race.get('discipline') == d }}>{{ d|capitalize }}</option>
+            {% endfor %}
+          </select>
+        </label>
+      </div>
+
+      <fieldset class="group">
+        <legend>Distances</legend>
+        <p class="small muted">Free text — "750 m", "20 km", whatever reads best.
+          Leave a leg blank if this race doesn't have it.</p>
+        <div class="pair">
+          <label class="field"><span>Swim</span>
+            <input type="text" name="swim_distance" value="{{ race.get('swim_distance','') or '' }}"></label>
+          <label class="field"><span>Bike</span>
+            <input type="text" name="bike_distance" value="{{ race.get('bike_distance','') or '' }}"></label>
+        </div>
+        <div class="pair">
+          <label class="field"><span>Run</span>
+            <input type="text" name="run_distance" value="{{ race.get('run_distance','') or '' }}"></label>
+          <label class="field"><span>Start time</span>
+            <input type="text" name="start_time" value="{{ race.get('start_time','') or '' }}" placeholder="07:30"></label>
+        </div>
+      </fieldset>
+
+      <fieldset class="group">
+        <legend>Limits</legend>
+        <div class="pair">
+          <label class="field">
+            <span>Capacity</span>
+            <input type="number" name="capacity" min="1"
+                   value="{{ race.get('capacity') if race.get('capacity') is not none else '' }}">
+            <small class="hint">Empty means no limit.</small>
+          </label>
+          <label class="field">
+            <span>Minimum age</span>
+            <input type="number" name="min_age" min="1"
+                   value="{{ race.get('min_age') if race.get('min_age') is not none else '' }}">
+          </label>
+        </div>
+        <div class="pair">
+          <label class="field">
+            <span>Price (BHD)</span>
+            <input type="text" name="price_bhd" value="{{ race.get('price_bhd', 0) }}">
+            <small class="hint">0 is free. Payment itself is Phase 8.</small>
+          </label>
+          <label class="field">
+            <span>Order on the page</span>
+            <input type="number" name="sort_order" value="{{ race.get('sort_order', 0) }}">
+          </label>
+        </div>
+      </fieldset>
+
+      {% if not creating %}
+      <fieldset class="group">
+        <legend>Age groups</legend>
+        <p class="small muted">One band per line:
+          <code>Label | from | to | gender</code>. Leave an age blank for an open
+          end, and the gender blank for any. Lines starting with # are ignored.</p>
+        <label class="field">
+          <span class="sr-only">Bands</span>
+          <textarea name="bands" rows="8" spellcheck="false"
+                    placeholder="Junior 13-15 | 13 | 15 | any&#10;M30-34 | 30 | 34 | male&#10;60+ | 60 | | any">{{ bands_text }}</textarea>
+        </label>
+        {% if entered %}
+        <p class="small notice-inline">{{ entered }} entries are on this race.
+          Saving recomputes their categories from their dates of birth.</p>
+        {% endif %}
+      </fieldset>
+      {% endif %}
+
+      <button class="btn btn-enter btn-block" type="submit">
+        {{ 'Add race' if creating else 'Save race' }}</button>
+    </form>
+  </div>
+
+  {% if not creating %}
+  <div class="card enter-card" style="margin-top:1rem">
+    <h2 style="font-size:var(--t-md)">Delete this race</h2>
+    <p class="muted small" style="margin:.3rem 0 .9rem">Blocked once anyone has
+      entered it.</p>
+    <form method="post" action="{{ url_for('admin.race_delete', race_id=race.race_id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-quiet" type="submit">Delete {{ race.name }}</button>
+    </form>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

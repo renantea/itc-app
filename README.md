@@ -34,6 +34,16 @@ enabled unit (already on for this account).
 - `ITC_ENV` — `development` | `production`.
 - `ITC_DATABASE` — defaults to `./itc.db`.
 
+**Email is off until you switch it on:**
+
+- `ITC_EMAIL_ENABLED=1` — required before anything is actually sent. Unset,
+  every message is logged with its subject and reported as "not sent", which
+  is what you want on a box that already holds a working mail key.
+- `BREVO_API_KEY` — shared from `~/.openclaw/.env`, same as the other apps.
+- `ITC_MAIL_SENDER` — defaults to a BytesWell address because that is what
+  Brevo has verified. **ITC's own domain must be verified in Brevo** before
+  `events@internationaltriathlonclub.com` will send.
+
 ## Tests
 
 ```bash
@@ -83,8 +93,51 @@ be replaced with ITC's calendar before anyone is invited to enter.
   when each athlete accepted it, and that record is worth only what the text
   says. ITC's own wording must replace it before entries go live.
 
+## After entering
+
+`/my-races` lists what the account has entered, grouped by reference, upcoming
+first. `/my-races/<reference>` is the entry itself.
+
+- **Withdrawal is per entry, not per registration.** A parent who entered three
+  children and has one with a broken wrist pulls that one.
+- **Asking happens on its own page.** A `confirm()` dialog would be an inline
+  handler and the CSP blocks those — the dialog would silently never appear and
+  a mis-tap would withdraw someone. GET asks, POST acts, no script involved.
+- **A cancelled entry is kept, not deleted.** It is the record that somebody
+  accepted a waiver and then withdrew. Capacity counts confirmed entries, so
+  the place comes back the moment it is cancelled.
+
+## Organiser area
+
+`/admin`, behind `role = 'admin'`. Reached from the account page rather than a
+fourth item in the main header — that bar already overflowed a 390px screen
+once.
+
+```bash
+.venv/bin/python make_admin.py liam@example.com   # promote, after they register
+.venv/bin/python make_admin.py --list             # who is an organiser
+.venv/bin/python make_admin.py --demote EMAIL
+```
+
+There is deliberately no way to mint an organiser through the web.
+
+- **Age bands are edited as text** — `Label | from | to | gender`, one per line,
+  blank ends meaning open ends. Seven lines pasted beats seven rounds of "add
+  another".
+- **Saving bands recomputes every entry on that race** from the date of birth
+  it has carried since Phase 4. Without that, fixing a boundary leaves start
+  lists showing categories that no longer exist.
+- **Deleting is refused once anyone has entered** — close the event instead.
+- **Bibs** are assigned in surname order, skipping withdrawn entries, and
+  existing numbers are kept unless you tick renumber. Bibs get printed.
+- **The CSV** is the deliverable for the timing company. It carries dates of
+  birth, emergency contacts and medical notes — personal data leaving the
+  building, and the screen says so. UTF-8 with a BOM, because Excel mangles
+  accented names without it and somebody retypes the start list by hand.
+
 ## Status
 
-Phases 1–4 of 8 complete — foundation, public event browsing, accounts,
-registration flow. Next: confirmation email and "my registrations" (Phase 5).
+Phases 1–6 of 8 complete — foundation, public event browsing, accounts,
+registration flow, confirmation and withdrawal, organiser admin. Next: the
+mobile/accessibility pass and deploy notes (Phase 7); payments are Phase 8.
 See PLAN.md.

@@ -42,13 +42,18 @@ def create_app(config_object=Config, overrides: dict = None) -> Flask:
     if app.config["DATABASE"] != ":memory:":
         db.init_db(app.config["DATABASE"])
 
+    from itc.admin import bp as admin_bp
     from itc.auth import bp as auth_bp
     from itc.entry import bp as entry_bp
     from itc.pages import bp as pages_bp
+    from itc.registrations import bp as registrations_bp
     app.register_blueprint(auth_bp)
     app.register_blueprint(pages_bp)
     app.register_blueprint(entry_bp)
+    app.register_blueprint(registrations_bp)
+    app.register_blueprint(admin_bp)
 
+    _adopt_gunicorn_logging(app)
     _register_headers(app)
     _register_errors(app)
     _register_template_helpers(app)
@@ -59,6 +64,25 @@ def create_app(config_object=Config, overrides: dict = None) -> Flask:
         return {"ok": True, "env": app.config["ENV_NAME"]}
 
     return app
+
+
+def _adopt_gunicorn_logging(app: Flask) -> None:
+    """Send the app's own log lines where gunicorn's already go.
+
+    Without this, Flask's logger sits above INFO under gunicorn and anything
+    logged at info — "no confirmation email sent", for one — is written
+    nowhere. A diagnostic that silently isn't recorded is worse than none,
+    because it is trusted.
+    """
+    import logging
+    gunicorn_logger = logging.getLogger("gunicorn.error")
+    if gunicorn_logger.handlers:
+        app.logger.handlers = gunicorn_logger.handlers
+        app.logger.setLevel(gunicorn_logger.level)
+        # itc.mail logs through its own module logger, so it needs the same.
+        itc_logger = logging.getLogger("itc")
+        itc_logger.handlers = gunicorn_logger.handlers
+        itc_logger.setLevel(gunicorn_logger.level)
 
 
 def _register_headers(app: Flask) -> None:

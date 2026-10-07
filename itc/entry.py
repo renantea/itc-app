@@ -29,7 +29,7 @@ import re
 import secrets
 from datetime import date, datetime, timedelta, timezone
 
-from flask import (Blueprint, abort, flash, g, redirect, render_template,
+from flask import (Blueprint, abort, current_app, flash, g, redirect, render_template,
                    request, session, url_for)
 
 from itc import ages
@@ -490,6 +490,15 @@ def confirm():
 
     session.pop("draft", None)
     flash("Entry confirmed. See you on the start line.", "ok")
+
+    # The entry is already written and committed. A mail failure is reported
+    # here and nowhere else — it must never undo a place on a start line.
+    from itc.registrations import send_confirmation
+    sent, info = send_confirmation(reference)
+    if sent:
+        flash(f"A copy is on its way to {g.user['email']}.", "ok")
+    else:
+        current_app.logger.info("No confirmation email sent (%s)", info)
     return redirect(url_for("entry.done", reference=reference))
 
 

@@ -34,13 +34,13 @@
       <ul>
         <li>Keep the reference — it's how we find your entry.</li>
         <li>Bib numbers and start waves are published closer to race day.</li>
-        {# Phase 5 builds both of these; saying so beats a dead link. #}
-        <li class="muted">A confirmation email and a withdrawal link are the
-          next thing being built.</li>
+        <li>Can't make it? Withdraw from <strong>My races</strong> and the place
+          goes back to somebody else.</li>
       </ul>
     </div>
 
-    <a class="btn btn-deep btn-block" href="{{ url_for('pages.event', slug=reg.slug) }}">Back to the event</a>
+    <a class="btn btn-enter btn-block" href="{{ url_for('registrations.index') }}">My races</a>
+    <a class="btn btn-block" style="margin-top:.6rem" href="{{ url_for('pages.event', slug=reg.slug) }}">Back to the event</a>
   </div>
 </div>
 {% endblock %}

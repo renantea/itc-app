@@ -1,0 +1,69 @@
+{# Confirmation email. Inline styles and tables only — mail clients drop a
+   stylesheet, and several still ignore flex and grid. Kept deliberately plain:
+   the useful part is the reference, the date and who is racing. #}
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>{{ event.event_name }}</title></head>
+<body style="margin:0;padding:0;background:#f7f9fb;font-family:Helvetica,Arial,sans-serif;color:#33475b;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f7f9fb;padding:24px 12px;">
+<tr><td align="center">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+         style="max-width:560px;background:#ffffff;border:1px solid #dfe6ed;border-radius:12px;overflow:hidden;">
+
+    <tr><td style="background:#0a1826;padding:20px 24px;">
+      <span style="display:inline-block;background:#14e0c4;color:#0a1826;font-weight:bold;
+                   font-size:12px;padding:6px 8px;border-radius:8px;letter-spacing:1px;">ITC</span>
+      <span style="color:#ffffff;font-size:18px;font-weight:bold;margin-left:8px;">Events</span>
+    </td></tr>
+
+    <tr><td style="padding:24px;">
+      <p style="margin:0 0 4px;color:#0b8f7f;font-size:12px;font-weight:bold;
+                letter-spacing:1.5px;text-transform:uppercase;">You're entered</p>
+      <h1 style="margin:0 0 6px;font-size:22px;color:#0a1826;">{{ event.event_name }}</h1>
+      <p style="margin:0 0 20px;color:#64788c;font-size:14px;">
+        {{ event.event_date|racedate('%A %d %B %Y') }}{% if event.venue %} · {{ event.venue }}{% endif %}
+      </p>
+
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+             style="background:#0a1826;border-radius:8px;margin-bottom:20px;">
+        <tr><td style="padding:14px 16px;">
+          <div style="color:#b9ccdb;font-size:11px;letter-spacing:1.5px;
+                      text-transform:uppercase;">Reference</div>
+          <div style="color:#ffffff;font-size:20px;font-weight:bold;letter-spacing:2px;">{{ reference }}</div>
+        </td></tr>
+      </table>
+
+      <h2 style="margin:0 0 10px;font-size:15px;color:#0a1826;">
+        {{ entries|length }} athlete{{ '' if entries|length == 1 else 's' }}</h2>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+        {% for e in entries %}
+        <tr><td style="padding:10px 12px;border:1px solid #dfe6ed;border-radius:8px;
+                       background:#f7f9fb;">
+          <strong style="color:#0a1826;font-size:15px;">{{ e.first_name }} {{ e.last_name }}</strong><br>
+          <span style="font-size:13px;color:#64788c;">
+            {{ e.race_name }}{% if e.age_group %} · {{ e.age_group }}{% endif %}{% if e.start_time %} · starts {{ e.start_time }}{% endif %}
+          </span>
+        </td></tr>
+        <tr><td style="height:8px;line-height:8px;">&nbsp;</td></tr>
+        {% endfor %}
+      </table>
+
+      <p style="margin:16px 0 0;font-size:14px;line-height:1.5;">
+        Keep this reference — it's how we find your entry. Bib numbers and start
+        waves are published closer to race day.
+      </p>
+      <p style="margin:12px 0 0;font-size:14px;line-height:1.5;">
+        Can't make it? Withdraw from your account and the place goes back to
+        somebody else rather than leaving a gap on the start line.
+      </p>
+    </td></tr>
+
+    <tr><td style="background:#f7f9fb;border-top:1px solid #dfe6ed;padding:16px 24px;
+                   font-size:12px;color:#64788c;">
+      {{ club_name }} — triathlon for all.
+    </td></tr>
+  </table>
+</td></tr>
+</table>
+</body>
+</html>

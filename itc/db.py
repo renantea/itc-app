@@ -149,6 +149,9 @@ CREATE TABLE IF NOT EXISTS entries (
     bib_number      TEXT,
     status          TEXT NOT NULL DEFAULT 'confirmed'
                     CHECK (status IN ('confirmed','waitlisted','cancelled')),
+    -- When the place was given back. Kept rather than deleting the row: the
+    -- entry is evidence that someone accepted a waiver and then withdrew.
+    cancelled_at    TEXT,
     created_at      TEXT NOT NULL,
     updated_at      TEXT NOT NULL
 );
@@ -227,6 +230,7 @@ def _migrate(conn) -> None:
     CHECK or a type needs the full rebuild dance, so prefer additive changes.
     """
     _add_column(conn, "entries", "guardian_name", "TEXT")
+    _add_column(conn, "entries", "cancelled_at", "TEXT")
 
 
 def _add_column(conn, table: str, column: str, decl: str) -> None:

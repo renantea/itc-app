@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}{{ reference }} — {{ club_name }}{% endblock %}
+
+{% block content %}
+<div class="wrap enter">
+  <a class="back back-ink" href="{{ url_for('registrations.index') }}">&larr; My races</a>
+
+  <div class="card enter-card">
+    <p class="eyebrow-ink">Entry {{ reference }}</p>
+    <h1>{{ event.event_name }}</h1>
+    <p class="muted">{{ event.event_date|racedate('%A %d %B %Y') }}{% if event.venue %} · {{ event.venue }}{% endif %}</p>
+
+    {% if is_past %}
+      <p class="notice-inline">This race has been run.</p>
+    {% elif not live %}
+      <p class="notice-inline">Everyone on this entry has withdrawn.</p>
+    {% endif %}
+
+    <ul class="review-list">
+      {% for e in entries %}
+      <li class="review-athlete {{ 'is-cancelled' if e.status == 'cancelled' }}">
+        <div class="review-head">
+          <h2>{{ e.first_name }} {{ e.last_name }}</h2>
+          {% if e.bib_number %}<span class="bib">{{ e.bib_number }}</span>{% endif %}
+        </div>
+        <p class="chips">
+          <span class="chip chip-{{ e.discipline }}">{{ e.race_name }}</span>
+          {% if e.age_group %}<span class="chip chip-cat">{{ e.age_group }}</span>{% endif %}
+          {% if e.start_time %}<span class="chip">Starts {{ e.start_time }}</span>{% endif %}
+          {% if e.status == 'cancelled' %}<span class="chip chip-out">Withdrawn</span>{% endif %}
+        </p>
+
+        <dl class="spec">
+          <div><dt>Born</dt><dd>{{ e.date_of_birth|racedate('%d %b %Y') }}</dd></div>
+          <div><dt>Emergency</dt><dd>{{ e.emergency_name }} · {{ e.emergency_phone }}</dd></div>
+          {% if e.guardian_name %}<div><dt>Guardian</dt><dd>{{ e.guardian_name }}</dd></div>{% endif %}
+          {% if e.medical_notes %}<div><dt>Medical</dt><dd>{{ e.medical_notes }}</dd></div>{% endif %}
+        </dl>
+
+        {# Asking first is its own screen: the confirm happens there, under a
+           POST with a token, so nothing destructive hangs off this link. #}
+        {% if e.status != 'cancelled' and not is_past %}
+        <a class="btn btn-quiet"
+           href="{{ url_for('registrations.withdraw', reference=reference, entry_id=e.entry_id) }}">Withdraw {{ e.first_name }}</a>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+
+    <div class="enter-note">
+      <h2>On the day</h2>
+      <ul>
+        <li>Bring this reference: <strong>{{ reference }}</strong>.</li>
+        <li>Bib numbers and start waves are published closer to race day.</li>
+        <li>Can't make it? Withdraw above — it puts your place back for
+          somebody else rather than leaving a gap on the line.</li>
+      </ul>
+    </div>
+
+    <a class="btn btn-deep btn-block" href="{{ url_for('pages.event', slug=event.slug) }}">About this event</a>
+  </div>
+</div>
+{% endblock %}

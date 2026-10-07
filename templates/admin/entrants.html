@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block title %}Entrants — {{ event.name }}{% endblock %}
+{% block hero %}{% include "admin/_nav.html" %}{% endblock %}
+
+{% block content %}
+<div class="wrap">
+  <a class="back back-ink" href="{{ url_for('admin.event_edit', event_id=event.event_id) }}">&larr; {{ event.name }}</a>
+
+  <div class="section-head">
+    <h1>Entrants</h1>
+    <span class="muted small">{{ rows|length }} shown</span>
+  </div>
+
+  {# Filters are a GET form so a filtered list is a URL somebody can send on. #}
+  <form class="card filters" method="get"
+        action="{{ url_for('admin.entrants', event_id=event.event_id) }}">
+    <label class="field">
+      <span>Race</span>
+      <select name="race">
+        <option value="">All races</option>
+        {% for r in races %}
+        <option value="{{ r.race_id }}" {{ 'selected' if race_id == r.race_id }}>{{ r.name }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label class="field">
+      <span>Status</span>
+      <select name="status">
+        <option value="">All</option>
+        {% for s in statuses %}
+        <option value="{{ s }}" {{ 'selected' if status == s }}>{{ s|capitalize }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label class="field">
+      <span>Search</span>
+      <input type="search" name="q" value="{{ search }}" placeholder="Name, club or reference">
+    </label>
+    <div class="filter-actions">
+      <button class="btn btn-deep" type="submit">Filter</button>
+      <a class="btn" href="{{ url_for('admin.entrants', event_id=event.event_id) }}">Clear</a>
+    </div>
+  </form>
+
+  <div class="card export">
+    <div>
+      <h2>Start list for the timing company</h2>
+      <p class="muted small">Exports exactly what's filtered above. <strong>It
+        contains dates of birth, emergency contacts and medical notes</strong> —
+        personal data leaving the building, so send it the way you'd send a
+        medical form.</p>
+    </div>
+    <a class="btn btn-enter"
+       href="{{ url_for('admin.entrants_csv', event_id=event.event_id, race=race_id or '', status=status, q=search) }}">Download CSV</a>
+  </div>
+
+  {% if race_id %}
+  <form class="card bibs" method="post"
+        action="{{ url_for('admin.assign_bibs', race_id=race_id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div>
+      <h2>Assign bibs</h2>
+      <p class="muted small">In surname order, skipping withdrawn entries.
+        Existing numbers are kept unless you renumber — bibs get printed.</p>
+    </div>
+    <div class="bib-fields">
+      <label class="field"><span>Prefix</span>
+        <input type="text" name="prefix" maxlength="8" placeholder="e.g. J"></label>
+      <label class="field"><span>Start at</span>
+        <input type="number" name="start" value="1" min="1"></label>
+      <label class="check"><input type="checkbox" name="overwrite" value="1">
+        <span>Renumber everyone</span></label>
+      <button class="btn btn-deep" type="submit">Assign</button>
+    </div>
+  </form>
+  {% else %}
+  <p class="muted small">Pick a single race above to assign bibs.</p>
+  {% endif %}
+
+  {% if not rows %}
+    <div class="card empty"><h3>Nobody matches that</h3>
+      <p>Try clearing the filters.</p></div>
+  {% endif %}
+
+  <div class="order-list">
+    {% for r in rows %}
+    <article class="card entrant {{ 'is-cancelled' if r.status == 'cancelled' }}">
+      <div class="order-head">
+        <div>
+          <h2>{{ r.last_name }}, {{ r.first_name }}</h2>
+          <p class="muted small">{{ r.race_name }}
+            {%- if r.age_group %} · {{ r.age_group }}{% endif %}
+            · {{ r.gender|capitalize }} · age {{ r.age }}
+            · born {{ r.date_of_birth }}</p>
+        </div>
+        <span class="ref-tag">{{ r.reference }}</span>
+      </div>
+
+      <dl class="spec">
+        <div><dt>Emergency</dt><dd>{{ r.emergency_name }} · {{ r.emergency_phone }}</dd></div>
+        {% if r.guardian_name %}<div><dt>Guardian</dt><dd>{{ r.guardian_name }}</dd></div>{% endif %}
+        {% if r.medical_notes %}<div><dt>Medical</dt><dd class="medical">{{ r.medical_notes }}</dd></div>{% endif %}
+        {% if r.club %}<div><dt>Club</dt><dd>{{ r.club }}</dd></div>{% endif %}
+        {% if r.shirt_size %}<div><dt>Shirt</dt><dd>{{ r.shirt_size }}</dd></div>{% endif %}
+        <div><dt>Account</dt><dd>{{ r.account_name }} · {{ r.account_email }}</dd></div>
+      </dl>
+
+      <form method="post" action="{{ url_for('admin.entry_update', entry_id=r.entry_id) }}"
+            class="entrant-edit">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="race" value="{{ race_id or '' }}">
+        <label class="field"><span>Bib</span>
+          <input type="text" name="bib_number" value="{{ r.bib_number or '' }}" maxlength="16"></label>
+        <label class="field"><span>Status</span>
+          <select name="status">
+            {% for s in statuses %}
+            <option value="{{ s }}" {{ 'selected' if r.status == s }}>{{ s|capitalize }}</option>
+            {% endfor %}
+          </select></label>
+        <button class="btn" type="submit">Save</button>
+      </form>
+    </article>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

@@ -12,10 +12,30 @@
     </dl>
   </div>
 
+  {% if current_user.role == 'admin' %}
+  <div class="card" style="margin-top:1rem;padding:1.1rem">
+    <h2 style="font-size:var(--t-md)">Organiser</h2>
+    <p class="muted small" style="margin:.3rem 0 .9rem">Build events, watch them
+      fill, assign bibs and export the start list.</p>
+    <a class="btn btn-deep btn-block" href="{{ url_for('admin.dashboard') }}">Open the organiser area</a>
+  </div>
+  {% endif %}
+
+  {% if upcoming %}
+  <div class="card" style="margin-top:1rem;padding:1.1rem">
+    <h2 style="font-size:var(--t-md)">
+      {{ upcoming }} upcoming entr{{ 'y' if upcoming == 1 else 'ies' }}</h2>
+    <p class="muted small" style="margin:.3rem 0 .9rem">Your references, start
+      times and the withdrawal option all live here.</p>
+    <a class="btn btn-enter btn-block" href="{{ url_for('registrations.index') }}">My races</a>
+  </div>
+  {% else %}
   <div class="card empty" style="margin-top:1rem">
     <h3>No entries yet</h3>
-    <p>Races you've entered will appear here once entry opens.</p>
-    <a class="btn btn-deep" href="{{ url_for('pages.home') }}">See what's on</a>
+    <p>Races you enter will show up here with your reference.</p>
+    <a class="btn btn-enter" href="{{ url_for('pages.home') }}">See what's on</a>
+    <p style="margin-top:.8rem"><a href="{{ url_for('registrations.index') }}">My races</a></p>
   </div>
+  {% endif %}
 </div>
 {% endblock %}

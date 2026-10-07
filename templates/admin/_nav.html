@@ -1,0 +1,14 @@
+{# Admin lives behind its own strip rather than a fourth item in the main
+   header: that bar already overflowed a 390px screen once (Phase 3), and an
+   organiser arrives here deliberately, not by browsing. #}
+<div class="admin-bar">
+  <div class="wrap">
+    <a href="{{ url_for('admin.dashboard') }}" class="admin-brand">Organiser</a>
+    <nav aria-label="Organiser">
+      <a href="{{ url_for('admin.dashboard') }}"
+         {{ 'aria-current=page' if request.endpoint == 'admin.dashboard' }}>Events</a>
+      <a href="{{ url_for('admin.event_new') }}"
+         {{ 'aria-current=page' if request.endpoint == 'admin.event_new' }}>New event</a>
+    </nav>
+  </div>
+</div>

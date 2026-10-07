@@ -234,4 +234,16 @@ def logout():
 @bp.get("/account")
 @login_required
 def account():
-    return render_template("account.html")
+    from datetime import date
+
+    from itc.db import scalar
+    # Cancelled entries are excluded: the number is "races you are going to",
+    # not "rows we hold about you".
+    upcoming = scalar(
+        """SELECT COUNT(*) FROM entries en
+             JOIN registrations g ON g.registration_id = en.registration_id
+             JOIN events ev       ON ev.event_id = g.event_id
+            WHERE g.user_id = ? AND en.status <> 'cancelled'
+              AND ev.event_date >= ?""",
+        (g.user["user_id"], date.today().isoformat()))
+    return render_template("account.html", upcoming=upcoming or 0)

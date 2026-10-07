@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}My races — {{ club_name }}{% endblock %}
+
+{% macro order_card(order, past=False) %}
+<article class="card order-card {{ 'is-past' if past }}">
+  <div class="order-head">
+    <div>
+      <h3><a href="{{ url_for('registrations.detail', reference=order.reference) }}">{{ order.event_name }}</a></h3>
+      <p class="muted small">{{ order.event_date|racedate }}{% if order.venue %} · {{ order.venue }}{% endif %}</p>
+    </div>
+    <span class="ref-tag">{{ order.reference }}</span>
+  </div>
+  <ul class="order-entries">
+    {% for e in order.entries %}
+    <li class="{{ 'is-cancelled' if e.status == 'cancelled' }}">
+      <span class="who">{{ e.first_name }} {{ e.last_name }}</span>
+      <span class="chips">
+        <span class="chip chip-{{ e.discipline }}">{{ e.race_name }}</span>
+        {% if e.age_group %}<span class="chip chip-cat">{{ e.age_group }}</span>{% endif %}
+        {% if e.status == 'cancelled' %}<span class="chip chip-out">Withdrawn</span>{% endif %}
+      </span>
+    </li>
+    {% endfor %}
+  </ul>
+  <a class="btn btn-block" href="{{ url_for('registrations.detail', reference=order.reference) }}">
+    {% if past %}View{% else %}View or withdraw{% endif %}
+  </a>
+</article>
+{% endmacro %}
+
+{% block content %}
+<div class="wrap">
+  <div class="section-head"><h1>My races</h1></div>
+
+  {% if not upcoming and not past %}
+    <div class="card empty">
+      <h3>Nothing entered yet</h3>
+      <p>Once you enter a race it shows up here, with your reference and the
+        option to withdraw.</p>
+      <a class="btn btn-enter" href="{{ url_for('pages.home') }}">See what's on</a>
+    </div>
+  {% endif %}
+
+  {% if upcoming %}
+  <div class="order-list">
+    {% for order in upcoming %}{{ order_card(order) }}{% endfor %}
+  </div>
+  {% endif %}
+
+  {% if past %}
+  <div class="section-head" style="margin-top:2rem"><h2>Been and done</h2></div>
+  <div class="order-list">
+    {% for order in past %}{{ order_card(order, past=True) }}{% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

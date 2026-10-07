@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Organiser — {{ club_name }}{% endblock %}
+{% block hero %}{% include "admin/_nav.html" %}{% endblock %}
+
+{% block content %}
+<div class="wrap">
+  <div class="section-head">
+    <h1>Events</h1>
+    <a class="btn btn-enter" href="{{ url_for('admin.event_new') }}">New event</a>
+  </div>
+
+  <p class="muted small">Age groups are worked out using
+    <strong>{% if age_rule == 'race_day' %}age on race day{% else %}age on 31 December
+    of the race year{% endif %}</strong>. Entries keep their date of birth, so
+    changing a band recomputes the categories.</p>
+
+  {% if not events %}
+    <div class="card empty">
+      <h3>No events yet</h3>
+      <p>Build the event first, then add the races inside it.</p>
+      <a class="btn btn-enter" href="{{ url_for('admin.event_new') }}">New event</a>
+    </div>
+  {% endif %}
+
+  <div class="order-list" style="margin-top:1rem">
+    {% for e in events %}
+    <article class="card admin-event {{ 'is-past' if e.is_past }}">
+      <div class="order-head">
+        <div>
+          <h2><a href="{{ url_for('admin.event_edit', event_id=e.event_id) }}">{{ e.name }}</a></h2>
+          <p class="muted small">{{ e.event_date|racedate }}{% if e.venue %} · {{ e.venue }}{% endif %}
+            · {{ e.race_count }} race{{ '' if e.race_count == 1 else 's' }}</p>
+        </div>
+        <span class="pill pill-{{ 'open' if e.status == 'open' else ('done' if e.status == 'completed' else 'shut') }}">{{ e.status|capitalize }}</span>
+      </div>
+
+      <div class="admin-stats">
+        <div><strong>{{ e.entered }}</strong><span>entered</span></div>
+        {% if e.waiting %}<div><strong>{{ e.waiting }}</strong><span>waiting</span></div>{% endif %}
+        <div><strong>{% if e.uncapped %}&infin;{% else %}{{ e.capacity or 0 }}{% endif %}</strong><span>places</span></div>
+      </div>
+
+      {% if e.capacity and not e.uncapped %}
+      <div class="cap-bar" role="img" aria-label="{{ e.entered }} of {{ e.capacity }} places taken">
+        <span style="width:{{ e.pct }}%"></span>
+      </div>
+      {% endif %}
+
+      <div class="admin-actions">
+        <a class="btn" href="{{ url_for('admin.event_edit', event_id=e.event_id) }}">Edit</a>
+        <a class="btn" href="{{ url_for('admin.entrants', event_id=e.event_id) }}">Entrants ({{ e.entered }})</a>
+        {% if e.status != 'draft' %}
+        <a class="btn" href="{{ url_for('pages.event', slug=e.slug) }}">Public page</a>
+        {% endif %}
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

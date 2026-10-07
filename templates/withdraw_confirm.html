@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Withdraw {{ entry.first_name }}? — {{ club_name }}{% endblock %}
+
+{% block content %}
+<div class="wrap enter">
+  <a class="back back-ink" href="{{ url_for('registrations.detail', reference=reference) }}">&larr; Back to {{ reference }}</a>
+
+  <div class="card enter-card">
+    <p class="eyebrow-ink">Withdrawing</p>
+    <h1>{{ entry.first_name }} {{ entry.last_name }}</h1>
+    <p class="muted">{{ entry.race_name }} · {{ entry.event_name }} ·
+      {{ entry.event_date|racedate }}</p>
+
+    <div class="notice notice-warn">
+      <p>This takes {{ entry.first_name }} off the start list and puts the place
+        back for somebody else. The rest of entry {{ reference }} is untouched.</p>
+      <p class="small">Entering again later is fine, as long as there is still
+        a place.</p>
+    </div>
+
+    <form method="post"
+          action="{{ url_for('registrations.withdraw', reference=reference, entry_id=entry.entry_id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-danger btn-block" type="submit">
+        Yes, withdraw {{ entry.first_name }}
+      </button>
+    </form>
+    <a class="btn btn-block" style="margin-top:.6rem"
+       href="{{ url_for('registrations.detail', reference=reference) }}">Keep the entry</a>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block title %}{{ 'New event' if creating else event.name }} — {{ club_name }}{% endblock %}
+{% block hero %}{% include "admin/_nav.html" %}{% endblock %}
+
+{% block content %}
+<div class="wrap enter">
+  <a class="back back-ink" href="{{ url_for('admin.dashboard') }}">&larr; All events</a>
+
+  <div class="card enter-card">
+    <p class="eyebrow-ink">{{ 'New event' if creating else 'Editing' }}</p>
+    <h1>{{ 'Build an event' if creating else event.name }}</h1>
+
+    <form method="post" novalidate
+          action="{{ url_for('admin.event_new') if creating else url_for('admin.event_edit', event_id=event.event_id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <label class="field">
+        <span>Name</span>
+        <input type="text" name="name" value="{{ event.get('name','') }}" required autofocus>
+      </label>
+
+      <div class="pair">
+        <label class="field">
+          <span>Race date</span>
+          <input type="date" name="event_date" value="{{ event.get('event_date','') }}" required>
+        </label>
+        <label class="field">
+          <span>Status</span>
+          <select name="status">
+            {% for s in statuses %}
+            <option value="{{ s }}" {{ 'selected' if event.get('status') == s }}>{{ s|capitalize }}</option>
+            {% endfor %}
+          </select>
+          <small class="hint">Only <strong>open</strong> accepts entries. Draft is
+            invisible to the public.</small>
+        </label>
+      </div>
+
+      <label class="field">
+        <span>Venue</span>
+        <input type="text" name="venue" value="{{ event.get('venue','') or '' }}">
+      </label>
+
+      <fieldset class="group">
+        <legend>Registration window <span class="muted">(optional)</span></legend>
+        <p class="small muted">Both dates are inclusive — "closes 12 March" means
+          entries are open all of the 12th.</p>
+        <div class="pair">
+          <label class="field">
+            <span>Opens</span>
+            <input type="date" name="reg_opens_at" value="{{ (event.get('reg_opens_at') or '')[:10] }}">
+          </label>
+          <label class="field">
+            <span>Closes</span>
+            <input type="date" name="reg_closes_at" value="{{ (event.get('reg_closes_at') or '')[:10] }}">
+          </label>
+        </div>
+      </fieldset>
+
+      <label class="field">
+        <span>Summary <span class="muted">(one line, shown on the event list)</span></span>
+        <input type="text" name="summary" value="{{ event.get('summary','') or '' }}">
+      </label>
+
+      <label class="field">
+        <span>Description</span>
+        <textarea name="description" rows="4">{{ event.get('description','') or '' }}</textarea>
+      </label>
+
+      <button class="btn btn-enter btn-block" type="submit">
+        {{ 'Create event' if creating else 'Save event' }}</button>
+    </form>
+  </div>
+
+  {% if not creating %}
+  <div class="card enter-card" style="margin-top:1rem">
+    <div class="section-head">
+      <h2>Races</h2>
+      <a class="btn btn-enter" href="{{ url_for('admin.race_new', event_id=event.event_id) }}">Add race</a>
+    </div>
+
+    {% if not races %}
+      <p class="muted">No races yet. An event with no races can't be entered.</p>
+    {% else %}
+    <ul class="order-entries admin-races">
+      {% for r in races %}
+      <li>
+        <a href="{{ url_for('admin.race_edit', race_id=r.race_id) }}"><strong>{{ r.name }}</strong></a>
+        <span class="chips">
+          <span class="chip chip-{{ r.discipline }}">{{ r.discipline|capitalize }}</span>
+          <span class="chip">{{ r.entered }}{% if r.capacity %}/{{ r.capacity }}{% endif %} entered</span>
+          <span class="chip">{{ r.bands }} band{{ '' if r.bands == 1 else 's' }}</span>
+          {% if r.min_age %}<span class="chip">Age {{ r.min_age }}+</span>{% endif %}
+        </span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    <a class="btn btn-deep btn-block" style="margin-top:1rem"
+       href="{{ url_for('admin.entrants', event_id=event.event_id) }}">Entrants and bibs</a>
+  </div>
+
+  <div class="card enter-card" style="margin-top:1rem">
+    <h2 style="font-size:var(--t-md)">Delete this event</h2>
+    <p class="muted small" style="margin:.3rem 0 .9rem">Only possible while
+      nobody has entered. Once there are entries, set the status to
+      <strong>closed</strong> instead — deleting would take real entries with it.</p>
+    <form method="post" action="{{ url_for('admin.event_delete', event_id=event.event_id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-quiet" type="submit">Delete {{ event.name }}</button>
+    </form>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
