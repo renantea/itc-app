@@ -192,7 +192,11 @@ CREATE TABLE IF NOT EXISTS settings (
 DEFAULT_SETTINGS = {
     "club_name": "International Triathlon Club",
     "age_rule": "dec31",            # dec31 | race_day — confirm with ITC
-    "currency": "BHD",
+    # Region is configurable so the app is not Bahrain-only. Defaults keep an
+    # existing database behaving exactly as before. Currency decimals are a
+    # fixed property of the code (see itc/locale.py), not a separate setting.
+    "currency": "BHD",              # ISO code, e.g. BHD | PHP | USD
+    "app_timezone": "Asia/Bahrain", # IANA zone for the local race-day calendar
 }
 
 

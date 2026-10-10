@@ -4,11 +4,15 @@ Read-only. Entry itself arrives in Phase 4 — every "Enter" control here is
 deliberately inert and says so, because a button that looks live and does
 nothing is worse than one that admits it isn't ready.
 """
-from datetime import date
-
 from flask import Blueprint, abort, render_template
 
-from itc.db import query_all, query_one
+from itc.db import get_setting, query_all, query_one
+from itc.locale import today_in
+
+
+def _local_today() -> str:
+    """Today's date in the club's configured zone (Asia/Bahrain by default)."""
+    return today_in(get_setting("app_timezone", "Asia/Bahrain"))
 
 bp = Blueprint("pages", __name__)
 
@@ -20,10 +24,11 @@ def _event_card_rows(upcoming: bool):
     """Events for the listing, newest-first for past, soonest-first for future.
 
     `today` is passed in as a bound parameter rather than using SQLite's
-    date('now'): that is UTC, and a race day here is a Bahrain calendar day, so
-    at 02:00 local the two disagree and an event vanishes a day early.
+    date('now'): that is UTC, and a race day is a local calendar day, so at
+    02:00 local the two disagree and an event vanishes a day early. The zone is
+    the configured ``app_timezone`` so this is correct in Bahrain or Manila.
     """
-    today = date.today().isoformat()
+    today = _local_today()
     comparison = ">=" if upcoming else "<"
     order = "ASC" if upcoming else "DESC"
     return query_all(
@@ -87,4 +92,4 @@ def event(slug):
         race["age_groups"] = groups.get(race["race_id"], [])
 
     return render_template("event.html", event=ev, races=races,
-                           is_past=ev["event_date"] < date.today().isoformat())
+                           is_past=ev["event_date"] < _local_today())

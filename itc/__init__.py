@@ -145,8 +145,8 @@ def _register_template_helpers(app: Flask) -> None:
 
     @app.template_filter("money")
     def money(value):
-        amount = float(value or 0)
-        return "Free" if amount <= 0 else f"BHD {amount:,.3f}"
+        from itc.locale import format_money
+        return format_money(value, get_setting("currency", "BHD"))
 
     @app.context_processor
     def inject():
@@ -154,6 +154,7 @@ def _register_template_helpers(app: Flask) -> None:
         from itc.auth import csrf_token
         return {
             "club_name": get_setting("club_name", "International Triathlon Club"),
+            "currency": get_setting("currency", "BHD"),
             "now_year": datetime.now(timezone.utc).year,
             "asset_v": _asset_version,
             "csrf_token": csrf_token,

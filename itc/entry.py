@@ -36,6 +36,12 @@ from itc import ages
 from itc.auth import login_required
 from itc.db import (exclusive_transaction, get_setting, now, query_all,
                     query_one, race_taken, transaction)
+from itc.locale import today_in
+
+
+def _local_today() -> str:
+    """Today in the club's configured zone — see itc/locale.py."""
+    return today_in(get_setting("app_timezone", "Asia/Bahrain"))
 
 bp = Blueprint("entry", __name__, url_prefix="/enter")
 
@@ -93,13 +99,14 @@ def _race_for_entry(race_id: int):
 def _closed_reason(race):
     """Why this race cannot be entered right now, or None.
 
-    Registration windows are compared as Bahrain calendar days and are
+    Registration windows are compared as local calendar days and are
     inclusive at both ends: "closes 12 March" means entries are open all of
-    the 12th. Comparing against `date.today()` rather than SQLite's UTC
-    `date('now')` matters here — between midnight and 03:00 local they differ,
-    and the wrong one shuts entries a day early.
+    the 12th. Comparing against the configured-zone local day rather than
+    SQLite's UTC `date('now')` matters here — between midnight and 03:00 local
+    they differ, and the wrong one shuts entries a day early. The zone is
+    `app_timezone`, so this is correct in Bahrain or Manila.
     """
-    today = date.today().isoformat()
+    today = _local_today()
     if race["event_status"] != "open":
         return f"Entries for {race['event_name']} are not open."
     if race["event_date"] < today:
