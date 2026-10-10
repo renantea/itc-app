@@ -29,12 +29,21 @@ from flask import (Blueprint, Response, abort, flash, g, redirect,
 
 from itc import ages
 from itc.db import (DISCIPLINES, EVENT_STATUSES, get_setting, now, query_all,
-                    query_one, transaction)
+                    query_one, set_setting, transaction)
+from itc.locale import CURRENCIES, app_timezone
 
 bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 ENTRY_STATUSES = ("confirmed", "waitlisted", "cancelled")
 GENDERS = ("any", "male", "female")
+AGE_RULES = ("dec31", "race_day")
+
+#: Zones offered in the Settings dropdown. Any IANA name is accepted on submit;
+#: these are just the common ones so the two launch regions are one click.
+COMMON_TIMEZONES = (
+    "Asia/Bahrain", "Asia/Manila", "Asia/Dubai", "Asia/Riyadh",
+    "Asia/Singapore", "Asia/Hong_Kong", "Europe/London", "UTC",
+)
 
 
 @bp.before_request
@@ -122,6 +131,67 @@ def dashboard():
         e["pct"] = int(min(e["entered"] / cap * 100, 100)) if cap else 0
     return render_template("admin/dashboard.html", events=events,
                            today=today, age_rule=get_setting("age_rule", "dec31"))
+
+
+# ── Settings ─────────────────────────────────────────────
+def _current_settings():
+    return {
+        "club_name": get_setting("club_name", "International Triathlon Club"),
+        "currency": get_setting("currency", "BHD"),
+        "app_timezone": get_setting("app_timezone", "Asia/Bahrain"),
+        "age_rule": get_setting("age_rule", "dec31"),
+    }
+
+
+def _settings_choices():
+    return {
+        "currencies": sorted(CURRENCIES),
+        "timezones": COMMON_TIMEZONES,
+        "age_rules": AGE_RULES,
+    }
+
+
+@bp.route("/settings", methods=["GET", "POST"])
+def settings():
+    """Region and club basics, so switching the app from Bahrain to a
+    Philippine series is a form, not a database edit. Validated before save:
+    a bad currency or zone here would quietly mislabel every price or shift
+    every race day."""
+    if request.method == "POST":
+        club_name = (request.form.get("club_name") or "").strip()
+        currency = (request.form.get("currency") or "").strip().upper()
+        tz = (request.form.get("app_timezone") or "").strip()
+        age_rule = (request.form.get("age_rule") or "").strip()
+
+        errors = []
+        if not club_name:
+            errors.append("Club name cannot be empty.")
+        if currency not in CURRENCIES:
+            errors.append(f"Unknown currency '{currency}'.")
+        # app_timezone falls back silently at read time, but a bad value saved
+        # here is a latent bug, so reject it at the point of entry instead.
+        if app_timezone(tz).key != tz:
+            errors.append(f"Unknown timezone '{tz}'.")
+        if age_rule not in AGE_RULES:
+            errors.append("Age rule must be one of: " + ", ".join(AGE_RULES) + ".")
+
+        if errors:
+            for e in errors:
+                flash(e, "error")
+            return render_template("admin/settings.html",
+                                   settings=request.form,
+                                   choices=_settings_choices()), 400
+
+        set_setting("club_name", club_name)
+        set_setting("currency", currency)
+        set_setting("app_timezone", tz)
+        set_setting("age_rule", age_rule)
+        flash("Settings saved.", "ok")
+        return redirect(url_for("admin.settings"))
+
+    return render_template("admin/settings.html",
+                           settings=_current_settings(),
+                           choices=_settings_choices())
 
 
 # ── Events ───────────────────────────────────────────────

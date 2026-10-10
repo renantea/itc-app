@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Settings — {{ club_name }}{% endblock %}
+{% block hero %}{% include "admin/_nav.html" %}{% endblock %}
+
+{% block content %}
+<div class="wrap enter">
+  <a class="back back-ink" href="{{ url_for('admin.dashboard') }}">&larr; All events</a>
+
+  <div class="card enter-card">
+    <p class="eyebrow-ink">Club</p>
+    <h1>Settings</h1>
+    <p class="muted small">Region settings let this instance run outside Bahrain.
+      Currency decides how every price is printed; timezone decides which
+      calendar day counts as &ldquo;today&rdquo; for listings and entry windows.</p>
+
+    <form method="post" novalidate action="{{ url_for('admin.settings') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <label class="field">
+        <span>Club name</span>
+        <input type="text" name="club_name" value="{{ settings.get('club_name','') }}" required>
+      </label>
+
+      <div class="pair">
+        <label class="field">
+          <span>Currency</span>
+          <select name="currency">
+            {% for c in choices.currencies %}
+            <option value="{{ c }}" {{ 'selected' if settings.get('currency') == c }}>{{ c }}</option>
+            {% endfor %}
+          </select>
+          <small class="hint">Prices show in this currency with its own decimals
+            (BHD 3, PHP 2). Example: {{ 1500|money }} after saving.</small>
+        </label>
+        <label class="field">
+          <span>Timezone</span>
+          <select name="app_timezone">
+            {% set tzs = choices.timezones %}
+            {% for tz in tzs %}
+            <option value="{{ tz }}" {{ 'selected' if settings.get('app_timezone') == tz }}>{{ tz }}</option>
+            {% endfor %}
+            {% if settings.get('app_timezone') and settings.get('app_timezone') not in tzs %}
+            <option value="{{ settings.get('app_timezone') }}" selected>{{ settings.get('app_timezone') }}</option>
+            {% endif %}
+          </select>
+          <small class="hint">The race-day calendar. Bahrain and Manila are a
+            day apart in the small hours.</small>
+        </label>
+      </div>
+
+      <label class="field">
+        <span>Age rule</span>
+        <select name="age_rule">
+          {% for r in choices.age_rules %}
+          <option value="{{ r }}" {{ 'selected' if settings.get('age_rule') == r }}>{{ 'Age on race day' if r == 'race_day' else 'Age on 31 December of the race year' }}</option>
+          {% endfor %}
+        </select>
+        <small class="hint">How age groups are worked out. Changing it recomputes
+          categories when bands are next edited.</small>
+      </label>
+
+      <div class="actions">
+        <button type="submit" class="btn btn-enter">Save settings</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

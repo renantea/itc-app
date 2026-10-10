@@ -9,6 +9,8 @@
          {{ 'aria-current=page' if request.endpoint == 'admin.dashboard' }}>Events</a>
       <a href="{{ url_for('admin.event_new') }}"
          {{ 'aria-current=page' if request.endpoint == 'admin.event_new' }}>New event</a>
+      <a href="{{ url_for('admin.settings') }}"
+         {{ 'aria-current=page' if request.endpoint == 'admin.settings' }}>Settings</a>
     </nav>
   </div>
 </div>

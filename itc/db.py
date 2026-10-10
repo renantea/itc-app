@@ -283,6 +283,15 @@ def get_setting(key: str, default: str = "") -> str:
     return row["value"] if row else default
 
 
+def set_setting(key: str, value: str) -> None:
+    """Upsert a single setting. Used by the organiser Settings screen."""
+    with transaction() as conn:
+        conn.execute(
+            "INSERT INTO settings (key, value) VALUES (?, ?) "
+            "ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+            (key, value))
+
+
 class transaction:
     """`with transaction() as conn:` — commits, or rolls back on error."""
 
